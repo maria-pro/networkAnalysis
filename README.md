@@ -1,3 +1,11 @@
+RStudio desktop - email with all the packages and versions installed
+
+foundation: xaringan slides
+
+practical: rmarkdown on github. possibly sent an email with a file to participants
+
+
+
 # networkAnalysis
 
 Questions: Do we assume knowledge of R/Rstudio? 
