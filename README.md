@@ -8,10 +8,12 @@ practical: rmarkdown on github. possibly sent an email with a file to participan
 
 # networkAnalysis
 
-Questions: Do we assume knowledge of R/Rstudio? 
-Do we stick with RStudio? or RStudio Cloud? or Google Colab? 
-Theory presentation: RMarkdown? Xaringan slides? 
-Practical questions: separate document (e.g. RMarkdown?) ? include in the lecture slides?
+Questions: Do we assume knowledge of R/Rstudio? yes
+Do we stick with RStudio? or RStudio Cloud? or Google Colab? RStudio desktop with RStudio cloud option
+
+Theory presentation: Xaringan slides? 
+
+Practical questions: separate document in RMarkdown 
 
 **Time available**: 3 hrs over 2 days
 
@@ -35,24 +37,118 @@ https://www.kaggle.com/lodetomasi1995/youtube-social-network
 ## **day 1**: basics and applications (e.g. 
 
 1.5hr - theory and some practical exercise
+
 *Aim* to have 15 minutes of talking and activity
 
 ### Lesson plan
 
 **10 minutes**: setting up - RStudio/RStudio Cloud/Google Colab?
+
 installing packages, loading files, housekeeping - repo
 
-**15-20 minutes**
+---------
+
+**5 minutes**
+
 Introduction:
+
 Why Social Network Analysis
+
 Main application areas
+
+---------
+
+**10 minutes**
+
+Network analysis: basic concepts
+
+Size, density, components, diameter, clustering coeffient
+
+---------
 
 **10 minutes**: group activity
 
+---------
+
+**10 minutes**: working with network data
+
+network data concepts
+
+data structures: sociomatrices, edge-lists
+
+network objects: creating and managing network objects in R
+
+
+
+statnet: 
+
+creating network object
+
+node and tie attributes
+
+network object in igraph
+
+
+---------
+
+**10 minutes**: group activity
+
+---------
+
+**10 minutes**: 
+
+importing network data and common network data tasks
+
+filtering networks based on vertex /edge attribute values:
+
+  filtering based on node values
+
+  remove isolates
+  
+  filtering based on edge values
+  
+  trasforming a directed network to a non
+
+---------
+
+**10 minutes**: group activity
+
+---------
+
+**10 minutes**: visualization
+
+plotting and layout
+
+aesthetics of network layouts
+
+plotting algorithms and methods: control over network layout, network graph layout with igraph
+
+effective network graphic design: examples, principles, design elements (node colour, shape, size, label, edge width, edge colour, edge type, legends)
+
+---------
+
+**10 minutes**: group activity
+
+---------
+
+**10 minutes**: interactive network graphics
+
+simple interactive networks in igraph
+
+publishing web-based interactive diagrams
+
+statnet web with shiny
+
+---------
+
+**10 minutes**: group activity
+
+---------
+
+
+
+---------
 15-20 minutes
-
-
-
 
 introduction:
 What is social network analysis and why do it. Example of application areas
