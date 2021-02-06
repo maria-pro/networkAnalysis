@@ -1,0 +1,11 @@
+---
+title: 'Practical Applications of Network Science: Workshop'
+author: "Maria Prokofieva"
+date: "06/02/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+

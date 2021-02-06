@@ -1,0 +1,67 @@
+---
+title: "Practical Applications of Network Science: Workshop "
+subtitle: "⚔<br/>with xaringan"
+author: "Dr Maria Prokofieva"
+institute: "VU Business School"
+date: "2021"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+Social media
+
+
+theory and practical applications of network science to solve today's challenges
+---
+
+
+**Packages to use**
+[igraph](https://igraph.org/r/)
+
+[statnet](https://cran.r-project.org/web/packages/statnet/)
+
+[sna](https://cran.r-project.org/web/packages/sna/)
+
+During the course of two days participants will accomplish a small project in R using social network analysis.
+The data will be provided and each practical task builds towards the project. 
+
+
+R Packages:
+
+- `statnet` package
+
+['statnet'](http://statnet.org/) is a collection of R packages for 
+
+- management, 
+
+- exploration, 
+
+- statistical analysis, 
+
+- simulation and 
+
+- vizualization of network data. 
+
+The statistical modeling framework is based on [Exponential-family Random Graph Models (ERGMs)](https://en.wikipedia.org/wiki/Exponential_random_graph_models).  
+
+-----
+
+Questions to ask about a network:
+
+- How large the network is?
+
+- How densely connected is it? 
+
+- Is the network made up of one or more distinct groups?
+
+- How compact is the network?
+
+- How clustered are the network members?
+
+
+---
