@@ -8,37 +8,61 @@ output:
   xaringan::moon_reader:
     lib_dir: libs
     nature:
+      ratio: "16:9"
+
       highlightStyle: github
       highlightLines: true
       countIncrementalSlides: false
 ---
 
-Social media
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+knitr::opts_chunk$set(echo = TRUE,   
+                      message = FALSE,
+                      warning = FALSE,
+                      fig.height = 4,
+                      fig.width = 8,
+                      fig.align = "center")
+```
+#Practical Applications of Network Science: Workshop:
 
 
 theory and practical applications of network science to solve today's challenges
 ---
+#Packages to use
 
-**Packages to use**
 [igraph](https://igraph.org/r/)
 
 [statnet](https://cran.r-project.org/web/packages/statnet/)
 
 [sna](https://cran.r-project.org/web/packages/sna/)
 
+```{r}
+
+#load libraries
+library (igraph)
+library (statnet)
+library (sna)
+```
 ---
 
-Big task:
+#Big task:
 
 (apart from conquering the universe)
 
 complete a small project in R using social network analysis, using provided dataset
 
-Smaller tasks:
+#Smaller tasks:
 
 - see each topic!
 ---
-`statnet` package
+#`igraph` package
+
+['igraph'](https://igraph.org/) is a collection for creating and manipulating graphs and analyzing networks. 
+
+- written in C and also exists as Python and R packages.
+---
+#`statnet` package
 
 ['statnet'](http://statnet.org/) is a collection of R packages for 
 
@@ -55,8 +79,6 @@ Smaller tasks:
 The statistical modeling framework is based on [Exponential-family Random Graph Models (ERGMs)](https://en.wikipedia.org/wiki/Exponential_random_graph_models).  
 -----
 
-
-
 Questions to ask about a network:
 
 - How large the network is?
@@ -70,6 +92,15 @@ Questions to ask about a network:
 - How clustered are the network members?
 
 ---
+Size
+
+= the number of members (e.g nodes, vertices or actors)
+
+```{r eval=FALSE}
+network.size()
+
+```
+
 
 
 

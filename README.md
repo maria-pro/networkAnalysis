@@ -24,7 +24,9 @@ Practical questions: separate document in RMarkdown
 
 [sna](https://cran.r-project.org/web/packages/sna/)
 
-During the course of two days participants will accomplish a small project in R using social network analysis.
+**Tasks for two days**:
+
+Complete a small project in R using social network analysis.
 The data will be provided and each practical task builds towards the project. 
 
 It can be similar to this one
