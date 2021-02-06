@@ -9,3 +9,23 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+# Practical Applications of Network Science: Workshop
+
+This two-day workshop will include:
+
+2 days * 3hrs hands-on workshops in R
+
+Target: real-world applications of network science
+
+
+**Skill level**: introductory level 
+
+- No knowledge/basic knowledge of network science
+
+- Basic knowledge of R and `tidyverse`
+
+**Packages used**
+
+
+
+
