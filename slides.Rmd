@@ -19,7 +19,6 @@ Social media
 theory and practical applications of network science to solve today's challenges
 ---
 
-
 **Packages to use**
 [igraph](https://igraph.org/r/)
 
@@ -27,13 +26,19 @@ theory and practical applications of network science to solve today's challenges
 
 [sna](https://cran.r-project.org/web/packages/sna/)
 
-During the course of two days participants will accomplish a small project in R using social network analysis.
-The data will be provided and each practical task builds towards the project. 
+---
 
+Big task:
 
-R Packages:
+(apart from conquering the universe)
 
-- `statnet` package
+complete a small project in R using social network analysis, using provided dataset
+
+Smaller tasks:
+
+- see each topic!
+---
+`statnet` package
 
 ['statnet'](http://statnet.org/) is a collection of R packages for 
 
@@ -48,8 +53,9 @@ R Packages:
 - vizualization of network data. 
 
 The statistical modeling framework is based on [Exponential-family Random Graph Models (ERGMs)](https://en.wikipedia.org/wiki/Exponential_random_graph_models).  
-
 -----
+
+
 
 Questions to ask about a network:
 
@@ -63,5 +69,17 @@ Questions to ask about a network:
 
 - How clustered are the network members?
 
+---
+
+
+
+
 
 ---
+Resources:
+
+[`statnet` workshop](https://github.com/statnet/Workshops/wiki)
+
+[Awesome list of resources](https://github.com/briatte/awesome-network-analysis)
+
+

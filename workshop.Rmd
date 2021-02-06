@@ -26,6 +26,14 @@ Target: real-world applications of network science
 
 **Packages used**
 
+[`igraph`](https://igraph.org/r/)
+
+[`statnet`](https://cran.r-project.org/web/packages/statnet/)
+
+[`sna`](https://cran.r-project.org/web/packages/sna/)
+
+*Datasets*
+
 
 
 
