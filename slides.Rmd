@@ -38,7 +38,6 @@ theory and practical applications of network science to solve today's challenges
 [sna](https://cran.r-project.org/web/packages/sna/)
 
 ```{r}
-
 #load libraries
 library (igraph)
 library (statnet)
@@ -93,15 +92,87 @@ Questions to ask about a network:
 
 - How clustered are the network members?
 
+
+---
+
+#Dataset
+
+`networkdata` package: a large collection of dataset for network science from wide variety of areas
+
+```{r}
+#install.packages("remotes")
+#remotes::install_github("schochastics/networkdata")
+library(networkdata)
+```
+
+```{r eval=FALSE}
+
+#to see the list of datasets
+data(package = "networkdata"))
+```
+
+```{r}
+library(UserNetR)
+data(Moreno)
+
+data(flo) #dataset from network package (statnet) 
+flo_network<-network(flo, directed=FALSE)
+
+```
+---
+#Basic concepts
+
+- nodes
+
+**edges**: observed ties in a network (also called edges, arcs, or relations)
+
+- can be directed or undirected
+
+An **undirected tie** is a tie with no direction (e.g. collaborarion)
+
+A **directed tie** is a tie with the direction (e.g. borrowing)
+
+---
+#Network characeristics
+
+```{r}
+summary(flo_network)
+```
+
+
 ---
 Size
 
-= the number of members (e.g nodes, vertices or actors)
+= the number of members (e.g nodes, vertices or actors)```{r eval=FALSE}
+network.size()```{r eval= FALSE}
 
-```{r eval=FALSE}
-network.size()
-
+```{r}
+network.size(Moreno)
+network.size(flo_network)
 ```
+---
+# Density 
+
+proportion of observed ties in a network to the maximum number of possible ties.
+
+a ratio that can range from 0 to 1.
+
+more interconnected networks have density closer to 1.
+
+- to calculate
+
+directed network: 
+
+Number of observed ties
+, the maximum number of possible ties among k actors is
+k ∗ (k−1), so the formula for density is:
+L
+k×(k−1)
+,
+where L is the number of observed ties in the network.
+
+---
+---
 
 
 
@@ -114,18 +185,10 @@ Resources:
 [`statnet` workshop](https://github.com/statnet/Workshops/wiki)
 
 
-Demos are available 
-```{r}
-demo(package="igraph")
-
-```
-
-
-```{r}
+Demos are available```{r}
+demo(package="igraph")``````{r}
 ```
 
 
 
 [Awesome list of resources](https://github.com/briatte/awesome-network-analysis)
-
-

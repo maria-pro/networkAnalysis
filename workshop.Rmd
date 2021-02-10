@@ -36,4 +36,117 @@ Target: real-world applications of network science
 
 
 
+1. Load the network file and create a network
+
+2. What are characteristics of the network?
+
+
+Day 1 - 3 hrs
+
+setup - 10 minutes
+
+10 minutes
+0. Why SNA and brief history
+
+20 minutes
+1. Foundations of SNA and introductory SNA in R
+
+terms:
+nodes, 
+edges, 
+adjacency matrix, 
+one and two-mode networks, 
+node degree, 
+connected components, 
+average shortest path, 
+diameter, 
+preferential attachment, 
+network centrality. 
+
+
+practical tasks to calculate basic metrics in R.
+
+Break 10 minutes
+
+2. Working with SNA in R 
+
+2.1. Network Data Structures (network objects)
+creating network objects:
+
+10 minutes + 10 minutes exercise
+statnet -creating network object and managing node and tie attributes
+
+10 minutes + 10 minutes exercise
+igraph - same
+
+2.2. importing network data and common network data tasks
+
+10 minutes + 10 minutes exercise
+filtering network (based on vertex or edge attribute values)
+
+break - 10 minutes
+
+
+------------
+
+Day 2 - 3 hrs
+
+10 minutes
+setup and refresher on the topic - 
+
+10 minutes
+2.1.Network Analysis in Social Media Research 
+
+Overview of social media research
+SNA applications in social media research and main studies
+(differentiation between self-reported and digitally collected network data)
+ethical considerations
+interpretation of basic metrics
+
+break 10 minutes
+
+2.2. Use case: Twitter analysis - 1 hr
+exploratory analysis of the selected dataset, and interpretation of results.
+
+break 10 minutes
+
+1 hr
+3.1 Network Analysis in business research - business analytics
+
+Overview of business analytics research - supply chain operations
+business analytics research and applications of SNA - amazon dataset
+
+Exploratory analysis of the selected dataset, and interpretation of results.
+
+
+
+----
+alternative --------------
+Introduction to the analysis of socio-technical networks, and applications of network analytic techniques in LA, i.e. community detection, bipartite network analysis, network clustering, integration with text analysis. Presentation of community detection, information flow analysis, and statistical approaches in network analysis. The students will be expected to select one approach out of those presented, and implement it on one of the suggested datasets in R.
+---- !!!!!!----------
+
+2.2 Extended feautures of Graphs - 30 minutes
+
+The Page Rank algorithm - Calculating the Google PageRank for the specified vertices.
+
+https://www.r-bloggers.com/2019/05/benchmark-of-popular-graph-network-packages/
+
+[Stanford Large Network Dataset Collection](https://snap.stanford.edu/data/index.html)
+[amazon dataset](https://snap.stanford.edu/data/index.html#amazon) 
+[google dataset](https://snap.stanford.edu/data/web-Google.html) 
+
+break - 10 minutes
+
+2.3. Other popular packages, benchmarking
+30 minutes
+
+graph-tool
+igraph
+networkit
+networkx
+snap
+
+2.4. Wrap-up 
+
+
 

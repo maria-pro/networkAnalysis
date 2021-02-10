@@ -23,4 +23,7 @@ destination<-data%>%
 nodes<-full_join(sources,destination, by="label")%>%
   rowid_to_column("id")
 
+l<-data(package = "networkdata")
+ll<-l$results[Title]
 
+class(l)
