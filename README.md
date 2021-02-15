@@ -36,7 +36,7 @@ https://www.kaggle.com/lodetomasi1995/youtube-social-network
 
 
 
-## **day 1**: basics and applications (e.g. 
+## **day 1**: basics and applications 
 
 1.5hr - theory and some practical exercise
 
@@ -48,9 +48,9 @@ https://www.kaggle.com/lodetomasi1995/youtube-social-network
 
 10 minutes - round up?
 
+## Lesson plan
 
-
-### Lesson plan
+### **day 1**. Part 1: basics and applications 
 
 **10 minutes**: setting up - RStudio/RStudio Cloud/Google Colab?
 
@@ -112,6 +112,12 @@ filtering networks based on vertex /edge attribute values:
   trasforming a directed network to a non
 
 ---------
+**BREAK**
+---------
+
+### **day 1**. Part 2: visualization 
+
+50 min (presentation) 
 
 **10 minutes**: visualization
 

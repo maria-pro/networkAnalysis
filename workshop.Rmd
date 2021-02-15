@@ -6,7 +6,9 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE,
+                      message=FALSE,
+                      warning=FALSE)
 ```
 
 # Practical Applications of Network Science: Workshop
@@ -34,57 +36,119 @@ Target: real-world applications of network science
 
 *Datasets*
 
+## Tasks
+
+Install (if not yet installed) and load the `igraph` package
+
+```{r}
+#install.packages("igraph")
+library(igraph)
+```
+
+Creating a network object in `igraph`
+
+**Empty graph**:
+
+```{r}
+g<-graph.empty(n=10, directed=TRUE)
+plot(g)
+```
+**Complete graph**: each pair of vertices has an edge connecting them, we use `LOOPS = FALSE` to not add self edges
+
+```{r}
+g<-graph.full(n=10, directed = FALSE, loops = FALSE)
+plot(g)
+```
+
+**Stars**
+```{r}
+g<-graph.star(n=10, mode="out")
+plot(g)
+
+g<-graph.star(n=10, mode="in")
+plot(g)
+```
+
+**Rings**
+```{r}
+g<-graph.ring(n=10)
+```
+
+Now let's create more "complicated" graphs with the given list of edges
+
+```{r}
+edges <- c(1,2, 3,2, 2,4)
+g<-graph(edges, n=max(edges), directed=TRUE)
+plot(g)
+```
+
+Can we do a **named graph**? Sure we can!
+
+When you use vertex names in your edge list, you don't need the number of nodes
+
+```{r}
+g3 <- graph( c("expresso", "milk", "milk", "chocolate", "cream", "chocolate", "expresso", "cream")) # named vertices 
+plot(g3)
+```
+For smaller graphs we can use
+
+- ` - `for undirected tie, 
+
+- `+-` for pointing left or 
+
+-`-+` for directed ties  & right, 
+
+- `++` for a symmetric tie, and 
+
+- “:” for sets of vertices.
+
+```{r}
+
+plot(graph_from_literal("dogs"---"cats", "cats"---"mice")) # the number of dashes doesn't matter
+
+```
+###Working with network attributes, edges and verteces
+
+To access vertices and edges:
+
+```{r}
+E(g3) # The edges of the object
+
+V(g3) # The vertices of the object
+```
+To view the network in a matrix form
+
+```{r}
+g3[]
+```
+
+Add attributes to the network, vertices, or edges:
+
+```{r}
+V(g3)$name # automatically generated when we created the network.
+
+V(g3)$calories <- c("male", "male", "male", "male", "female", "female", "male")
+E(g3)$type <- "yumminess" # Edge attribute, assign "yumminess" to all edges
+E(g3)$weight <- 10 # Edge weight, setting all existing edges to 10
+```
+To examine attributes:
+```{r}
+edge_attr(g3)
+
+```
 
 
-1. Load the network file and create a network
-
-2. What are characteristics of the network?
+Let's look at some of the characteristics of the graph using `igraph`
 
 
-Day 1 - 3 hrs
+# Visualization
+```{r}
+plot(g3, edge.arrow.size=.5, vertex.color="gold", vertex.size=15,
+vertex.frame.color="gray", vertex.label.color="black",
+vertex.label.cex=0.8, vertex.label.dist=2, edge.curved=0.2)
 
-setup - 10 minutes
+```
 
-10 minutes
-0. Why SNA and brief history
-
-20 minutes
-1. Foundations of SNA and introductory SNA in R
-
-terms:
-nodes, 
-edges, 
-adjacency matrix, 
-one and two-mode networks, 
-node degree, 
-connected components, 
-average shortest path, 
-diameter, 
-preferential attachment, 
-network centrality. 
-
-
-practical tasks to calculate basic metrics in R.
-
-Break 10 minutes
-
-2. Working with SNA in R 
-
-2.1. Network Data Structures (network objects)
-creating network objects:
-
-10 minutes + 10 minutes exercise
-statnet -creating network object and managing node and tie attributes
-
-10 minutes + 10 minutes exercise
-igraph - same
-
-2.2. importing network data and common network data tasks
-
-10 minutes + 10 minutes exercise
-filtering network (based on vertex or edge attribute values)
-
-break - 10 minutes
 
 
 ------------
