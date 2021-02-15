@@ -40,7 +40,15 @@ https://www.kaggle.com/lodetomasi1995/youtube-social-network
 
 1.5hr - theory and some practical exercise
 
-*Aim* to have 15 minutes of talking and activity
+50 min (presentation: theory + R applications) + 20 minutes (practice: tasks)
+
+10 minutes break
+
+50 min (presentation) + 30 minutes (practice)
+
+10 minutes - round up?
+
+
 
 ### Lesson plan
 
@@ -51,7 +59,6 @@ installing packages, loading files, housekeeping - repo
 ---------
 
 **5 minutes**
-
 Introduction:
 
 Why Social Network Analysis
@@ -68,10 +75,6 @@ Size, density, components, diameter, clustering coeffient
 
 ---------
 
-**10 minutes**: group activity
-
----------
-
 **10 minutes**: working with network data
 
 network data concepts
@@ -80,9 +83,7 @@ data structures: sociomatrices, edge-lists
 
 network objects: creating and managing network objects in R
 
-
-
-statnet: 
+**10 minutes**: working with `igraph`
 
 creating network object
 
@@ -90,14 +91,13 @@ node and tie attributes
 
 network object in igraph
 
+**10 minutes**: working with statnet: 
 
 ---------
 
-**10 minutes**: group activity
+**20 minutes**: group activity
 
----------
-
-**10 minutes**: 
+create network objects
 
 importing network data and common network data tasks
 
@@ -110,10 +110,6 @@ filtering networks based on vertex /edge attribute values:
   filtering based on edge values
   
   trasforming a directed network to a non
-
----------
-
-**10 minutes**: group activity
 
 ---------
 
