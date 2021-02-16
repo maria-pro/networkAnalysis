@@ -1,0 +1,24 @@
+---
+title: "Workshop - Day 2"
+author: "Maria Prokofieva"
+date: "17/02/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Network Analysis of tweets
+
+# Network Analysis of Game of Thrones
+
+## Data exploration
+
+## Degree Centrality to find the most important character
+
+## Betweenness Centrality to find the most important character
+
+## PageRank to find the most important character
+

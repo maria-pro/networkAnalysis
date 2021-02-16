@@ -13,6 +13,19 @@ output:
       highlightStyle: github
       highlightLines: true
       countIncrementalSlides: false
+      
+      
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    css: ["shinobi", "ninjutsu", "css/slides.css"]
+    seal: true
+    self_contained: false
+    nature:
+      ratio: "16:9"
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false      
 ---
 
 ```{r setup, include=FALSE}
@@ -27,7 +40,7 @@ knitr::opts_chunk$set(echo = TRUE,
 #Practical Applications of Network Science: Workshop:
 
 
-theory and practical applications of network science to solve today's challenges
+Theory and practical applications of network science to solve today's challenges
 ---
 #Packages to use
 
@@ -35,25 +48,96 @@ theory and practical applications of network science to solve today's challenges
 
 [statnet](https://cran.r-project.org/web/packages/statnet/)
 
-[sna](https://cran.r-project.org/web/packages/sna/)
-
 ```{r}
+#install.packages("igraph","statnet", "ggraph", "tidygraph")
+
 #load libraries
 library (igraph)
 library (statnet)
-library (sna)
+library(ggraph)
+library(tidygraph)
 ```
 ---
 
-#Big task:
+# Big task:
 
 (apart from conquering the universe)
 
-complete a small project in R using social network analysis, using provided dataset
+complete a small project in R using social network analysis, using the provided dataset
 
-#Smaller tasks:
+# Smaller tasks:
 
 - see each topic!
+---
+# Network science:
+
+
+---
+# Why Network Science?
+
+understanding how people, entities, structures are connected
+
+how ... interact
+
+how ... that influence the change in ... across space and time
+
+**Overall**: use network analysis if you need to understand the **system**: 
+  
+  = how **interactions** or **connections** between **components** make up a **system**
+
+
+IMAGE
+---
+# Why Network Science?
+
+If you have any of these questions:
+
+- What are the elements in the system?
+
+- What are the role of those elements in the system
+
+- What are the processes/interactions that build systems?
+
+- What are the dynamics of changes in the system?(e.g. spread of the disease, etc.)
+---
+# Applications 
+
+social networks - any!
+
+- humans and animals
+
+- ecological communities and populations
+
+- personality traits
+
+- biological systems: genes regulation systems, metabolic systems
+
+- ANY SYSTEM 
+---
+# Why R?
+
+- free, cross-platform, open-source programming language
+
+- large community of users and large community of academic users
+
+- dynamic growth with new and improved packages
+
+- Comprehensive R Archive Network (CRAN): repository with R packages that have been vetted and deposited on a server
+---
+# R Packages
+
+This tutorial we will use:
+
+- `igraph`
+
+- `statnet`
+
+Also
+- `tidygraph`
+
+- `ggraph` 
+
+Let's talk about them briefly to dig into more details in the practical part.
 ---
 #`igraph` package
 
@@ -79,25 +163,22 @@ complete a small project in R using social network analysis, using provided data
 
 - based on [Exponential-family Random Graph Models (ERGMs)](https://en.wikipedia.org/wiki/Exponential_random_graph_models).  
 ---
+#`ggraph`
 
-Questions to ask about a network:
+[`ggraph`](https://cran.r-project.org/web/packages/ggraph/) is an extension of `ggplot2` for graph visualizations
 
-- How large the network is?
-
-- How densely connected is it? 
-
-- Is the network made up of one or more distinct groups?
-
-- How compact is the network?
-
-- How clustered are the network members?
-
+- use the same layer by layer philosophy
 
 ---
+# `tidygraph`
 
-#Dataset
+[`tidygraph`] (https://cran.r-project.org/web/packages/tidygraph/) is a tidy API for graph manipulation
 
-`networkdata` package: a large collection of dataset for network science from wide variety of areas
+- Provides a way for dplyr to interact with graphs
+---
+# Datasets
+
+[`networkdata` package](http://networkrepository.com/): a large collection of dataset for network science from wide variety of areas
 
 ```{r}
 #install.packages("remotes")
@@ -111,24 +192,18 @@ library(networkdata)
 data(package = "networkdata")
 ```
 
-```{r eval=FALSE}
-library(UserNetR)
-data(Moreno)
-
-data(flo) #dataset from network package (statnet) 
-flo_network<-network(flo, directed=FALSE)
-
-```
 ---
-graphex1.jpg
+# What is a network?
 
-Network of connections between devices within the Internet. Courtesy of Steve Jurvetson.http://www.flickr.com/photos/jurvetson/916142/
+Graph theory
+
+A **graph** is made up of **vertices** (also called **nodes**) that are connected by **edges** (also called **links** or relationships).
+
+IMAGE
 ---
-#Basic concepts
+# Edges 
 
-- **nodes** (*N*):
-
-**edges** (E: observed ties in a network (also called edges, arcs, or relations)
+E: observed ties in a network (also called edges, arcs, or relations)
 
 - can be directed or undirected
 
@@ -139,25 +214,47 @@ A **directed tie** is a tie with the direction (e.g. borrowing) = *arcs*!
 graphDir.png
 
 graphUnd.png
----
-An undirected network where the nodes and edges have different types, as indicated by their colors and line styles.
-
-graphC.png
 
 ---
 #Weigthed graph
 A directed network where the edges and nodes have different weights, as indicated by their sizes.
 
+IMAGE
 graphW.png
+
+--
+
+
+Single-Mode and Multi-Mode
+
 ---
+# Questions to ask about a network:
 
+- How large the network is?
+
+- How densely connected is it? 
+
+- Is the network made up of one or more distinct groups?
+
+- How compact is the network?
+
+- How clustered are the network members?
 
 ---
-#Basic types
+# Measures
 
-**Named graph**:
+Graph measures
 
+Node measures
 
+Edge measures
+
+Network measure
+
+---
+graphex1.jpg
+
+Network of connections between devices within the Internet. Courtesy of Steve Jurvetson.http://www.flickr.com/photos/jurvetson/916142/
 ---
 #Network characteristics
 
@@ -165,7 +262,9 @@ graphW.png
 summary(flo_network)
 ```
 ---
-#Size
+#Graph measures
+
+**Size**
 
 = the number of members (e.g nodes, vertices or actors)
 
@@ -180,7 +279,9 @@ network.size(Moreno)
 network.size(flo_network)
 ```
 ---
-# Density 
+# Graph measures
+
+**Density** 
 
 proportion of observed ties in a network to the maximum number of possible ties.
 
@@ -189,7 +290,11 @@ a ratio that can range from 0 to 1.
 more interconnected networks have density closer to 1.
 
 ---
-#Density of directed network:
+# Graph measures
+
+**Density** 
+
+Density of directed network:
 
 (directed network is a network with a direction)
 
@@ -201,62 +306,140 @@ Number of observed ties `L` to the maximum number of possible ties among `k` act
 
 Loops are excluded! (= a tie between a node and itself)
 ----
-#Density of undirected network
+# Graph measures
+
+**Density** 
+
+Density of undirected network
 
 ##IMAGE UNDIRECTED NETWORK
 ,
 where L is the number of observed ties in the network.
 
 ---
-#Components
+# Graph measures
 
+**Diameter**
 
----
-#Diameter 
-
-
-Finish basic characteristics
-
+The maximum of the shortest distances between all node-pairs in the graph.
 
 ---
-#Clustering Coefficient
+# Graph measures
 
---
+## Shortest path 
 
+- unweighted distance: the number of edges between two nodes
+
+-  weighted distance: the sum of weights between two nodes.
+
+IMAGE
+---
+# Graph measures
+
+## Shortest path algorithms 
+
+**Breadth-First Search(BFS)**: Start at the root node and explore all of the neighbor nodes at the present depth prior to moving on to the nodes at the next level.
+
+**Depth-First Search(DFS)**: Start at the root node and explore as far as possible along each branch before moving on to the branches at the next level.
+
+IMAGE
+---
+# Node Measure
+
+**Degree Centrality**: Number of edges that a node has 
+= the number of links incident upon a node.
+
+**Eigenvector Centrality**: 
+---
+# Node Measure
+
+**Eigencentrality** is a measure of the importance of a node in a network. 
+
+- assigns relative scores to all nodes in the network that connections to high-scoring nodes contribute more to the score of the node in question than equal connections to low-scoring nodes.
+
+Node high on eigenvector centrality is essentially connected to many high degree nodes.
 
 ---
-Foundations of SNA and introductory SNA in R
+# Node Measure
 
-#Adjacency matrix 
+**Closeness Centrality** 
+
+In a connected graph, the **normalized closeness** of a node is the average length of the shortest path between the node and all other nodes in the graph. 
+
+The more central a node is, the closer it is to all other nodes.
+
+---
+# Node Measure
+
+**Betweenness Centrality** 
+
+The **normalized betweenness** of a node is the number of times a node acts as a bridge along the shortest path between two other nodes.
+
+---
+# Node Measure
+
+IMAGE
+
+centrality.png
+---
+# Network Measure
+
+**Subgraphs**: 
+
+Subset of nodes in a network, along with all of the edges linking these nodes.
+
+**Components** 
+
+A subgraph of the network that is disconnected from each other.
+
+---
+# Network Measure
+
+**Subgraphs** and **Components** 
+
+IMAGE components.png
+
+---
+# Network Measure
+
+**Islands** 
+
+Only retain edges that have weight larger than threshold.
+
+IMAGE islands.png
+---
+# Network Measure
+
+**Ego Network**
+
+Subnetworks that are centered on a certain node (the ego node) by running a breadth-first search starting at the ego node, and limiting depth smaller than 3.
+
+IMAGE islands.png
+---
+# Network Measure
+
+**Clustering coefficient**
+
+Measure the proportion of the ego’s friends that are also friends with each other and the degree to which nodes in a graph tend to cluster together.
+
+---
+# Network Measure
+
+**Cliques**
+
+Define as a maximal completely connected subgraph of an undirected graph that every two distinct nodes in the clique are adjacent.
+
+---
+# Adjacency matrix 
 
 unweighted networks of N nodes without multiple connections = N×N Adjacency matrix
----
 
-one and two-mode networks, 
-
+IMAGE
 ---
-
-node degree, 
----
-connected components, 
-
----
-average shortest path, 
----
-diameter, 
----
-preferential attachment, 
-
----
-network centrality. 
-
----
-Part 2 - practical
-#Working with SNA in R
-
-##How to store information about the network?
+# How to store information about the network?
 
 - rectangular data structures?
+
 = rows are observations, columns are variables?
 
 ---
@@ -271,7 +454,7 @@ PROBLEM: how to fit in relational structure?
 observation/variable -> tie (=relationship between members of a network)
 
 ---
-#Sociomatrices
+# Sociomatrices
 
 - a matrix containing network information
 
@@ -279,10 +462,9 @@ observation/variable -> tie (=relationship between members of a network)
 
 - also called **adjacency matrix**:  1s in the cells = nodes are adjacent to one another in the network
 
-
 IMAGE
 ----
-#Sociomatrices
+# Sociomatrices
 
 Non-directed network: the sociomatrix is symmetric around the diagonal. 
 
@@ -290,13 +472,13 @@ Directed network: EXAMPLE
 
 Simple networks(no self-ties):diagonals are all zeros
 ---
-#Sociomatrices
+# Sociomatrices
 
 EXAMPLE
 
 Disadvantages: sparse sociomatrices with large networks
 ---
-#Edge list
+# Edge list
 
 =lists every tie in the network. 
 
@@ -307,7 +489,7 @@ Disadvantages: sparse sociomatrices with large networks
 IMAGE
 ---
 
-#Network Data objects
+# Network Data objects
 
 Types of information:
 
@@ -324,6 +506,13 @@ in `statnet` =vertices
 
 **Metadata**: other information about the entire network
 `statnet` = global information about the network (e.g. directed or not directed, are loops allowed, etc.)
+---
+# Things to do with networks
+
+Create or import networks
+
+
+
 ---
 # Network in R
 
