@@ -1,0 +1,96 @@
+---
+title: "ggraph and tidygraph"
+author: "Maria Prokofieva"
+date: "17/02/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidygraph)
+library(ggraph)
+```
+
+`tidygraph` provides a way for dplyr to interact with graphs
+
+`ggraph` extension to ggplot2 for graph analysis
+
+# Tidy data -> Tidy network data
+
+**Tidy data** approach relies on 3 rules which make a dataset tidy
+
+- Each variable must have its own column.
+
+- Each observation must have its own row.
+
+- Each value must have its own cell.
+
+Can we code network data in this way?
+
+Relational data -> single *tidy* data frame ?
+
+But
+
+nodes data -> tidy data = tidy data frame
+
+edges data -> tidy data = tidy data frame
+
+2 tidy data frames -> `tbl_graph` object
+
+## The tbl_graph object
+
+What is happening:
+
+`igraph`: keep the node and edge data in a list and creating igraph objects
+
+`tidygraph`: subclasses igraph with the `tbl_graph` class to work in a tidy manner.
+
+- ensures that all`igraph` features will work with `tbl_graph` objects. 
+
+To create `tbl_graph` objects use `tbl_graph()` function and providea node data.frame and an edge data.frame. It also works with : 
+
+- data.frame
+
+- list
+
+- matrix 
+
+- igraph object (`igraph`)
+
+- network object (`network`)
+
+- and LOTS of others (see [this](https://cran.r-project.org/web/packages/tidygraph/tidygraph.pdf))
+
+```{r}
+mtcars_matrix <- cor(t(mtcars[,c(1,3:6)]))
+mtcars_graph<-as_tbl_graph(mtcars_matrix)
+
+mtcars_graph
+```
+
+
+iris_clust <- hclust(dist(iris[1:4]))
+iris_tree <- as_tbl_graph(iris_clust)
+iris_tree
+
+## How it works
+
+**Old way**: 
+
+`tidygraph` introduces new functions as well as allows to use traditional `tidyverse` functions:
+
+`mutate_nodes()` = `mutate (..., target = 'nodes)`
+
+`filter_edges()`= `filter (..., target = 'edges')`
+
+`arrange(..., target = 'nodes') `
+
+**New way**:
+
+Use a **pointer**  to let the data object itself do all manipulation.
+
+This pointer is changed using the `activate()` 
+
