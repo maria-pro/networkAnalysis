@@ -1,0 +1,391 @@
+---
+title: "igraph2 - French trains case study"
+author: "Maria Prokofieva"
+date: "18/02/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(igraph)
+library(statnet)
+library(tidygraph)
+library(ggraph)
+```
+
+##Case study - French trains
+
+Let's look at using network science in more details using a more practical example.
+
+We are going to use this dataset from `TidyTuesday` which is an awesome project run in the R community.This is a weekly project which means that every week they post a raw dataset, a chart or article related to that dataset, and ask you to explore the data. 
+
+The dataset is "almost" tidy and give an excellent opportunity to practice R skills to wrangle the data and wreck your brains
+[Link](https://github.com/rfordatascience/tidytuesday)
+
+This time we will look at one of the earlier datasets published [here](https://github.com/rfordatascience/tidytuesday/tree/master/data/2019/2019-02-26) 
+
+The data comes from the SNCF (National Society of French Railways) open data [portal](https://ressources.data.sncf.com/explore/dataset/regularite-mensuelle-tgv-aqst/information/?sort=nombre_de_trains_annules&q=gare&dataChart=eyJxdWVyaWVzIjpbeyJjaGFydHMiOlt7InR5cGUiOiJzcGxpbmUiLCJmdW5jIjoiQVZHIiwieUF4aXMiOiJleHRlcm5lcyIsInNjaWVudGlmaWNEaXNwbGF5Ijp0cnVlLCJjb2xvciI6IiNhNmQ4NTQifV0sInhBeGlzIjoicGVyaW9kZSIsIm1heHBvaW50cyI6IiIsInRpbWVzY2FsZSI6Im1vbnRoIiwic29ydCI6IiIsImNvbmZpZyI6eyJkYXRhc2V0IjoicmVndWxhcml0ZS1tZW5zdWVsbGUtdGd2LWFxc3QiLCJvcHRpb25zIjp7InNvcnQiOiJub21icmVfZGVfdHJhaW5zX2FubnVsZXMifX19XSwidGltZXNjYWxlIjoiIiwiZGlzcGxheUxlZ2VuZCI6dHJ1ZSwiYWxpZ25Nb250aCI6dHJ1ZX0%3D).
+
+-------
+
+The SNCF is France's national state-owned railway company. Founded in 1938, it operates the country's national rail traffic along with Monaco, including the TGV, France's high-speed rail network. 
+
+This dataset covers 2015-2018 with a lot of different train stations.
+
+It comes in two versions: 
+
+- `full_trains.csv` dataset with it's 27 columns
+
+- `small_trains.csv` dataset with only 13 columns
+
+We will be working primarily with `small_trains.csv` for demonstation purposes.
+
+--------
+
+Let's start by reading the file and creating a network object
+
+```{r}
+small_trains <- read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2019/2019-02-26/small_trains.csv")
+
+head(small_trains)
+```
+
+Let's create the **node list**:
+
+We need to isolate `distinct` stations from both the “departure_station” and “arrival_station” columns and then join the information from these columns together.
+
+```{r}
+routes_from <- small_trains %>%
+  distinct(departure_station) %>%
+  rename(label = departure_station)
+
+head(routes_from)
+
+routes_to <- small_trains %>%
+  distinct(arrival_station) %>%
+  rename(label = arrival_station)
+
+head(routes_to)
+```
+
+And use a full join to include all unique places from both the departure_station and arrival_station.
+
+```{r}
+nodes <- full_join(routes_from, routes_to, by = "label")
+head(nodes)
+```
+Let's give unique IDs for each station
+
+```{r}
+nodes <- nodes %>% rowid_to_column("id")
+head(nodes)
+```
+
+Let's create the **edge list**:
+
+```{r}
+per_route <- small_trains %>%  
+  group_by(departure_station, arrival_station) %>%
+  summarise(weight = mean(total_num_trips)) %>% 
+  ungroup()
+
+head(per_route)
+```
+But... we still have “departure_station” and “arrival_station” columns contain labels rather than IDs. 
+
+Let's link the IDs that have been assigned in nodes to each station in both the “departure_station” and “arrival_station” columns.
+
+```{r}
+edges <- per_route %>% 
+  left_join(nodes, by = c("departure_station" = "label")) %>% 
+  rename(from = id)
+
+edges <- edges %>% 
+  left_join(nodes, by = c("arrival_station" = "label")) %>% 
+  rename(to = id)
+
+head(edges)
+```
+Let's reorder the columns so that the dataset starts with “from” and “to” (IDs). We also do not need “departure_station” and “arrival_station” columns with the names of the stations.
+
+Let's use `select() function` to include the “from”, “to”, and “weight” columns.
+
+```{r}
+edges <- edges%>%
+  select(from, to, weight)
+
+head(edges)
+```
+
+Create network object
+
+```{r}
+routes_graph <- graph_from_data_frame(d=edges, vertices=nodes, directed=T)
+
+
+#routes_network <- network(edges, vertex.attr = nodes, matrix.type = "edgelist", ignore.eval = FALSE)
+
+```
+
+`graph.data.frame()`function creates an igraph graph from one or two data frames containing the edge list and edge/vertex attributes.
+
+```{r eval=FALSE}
+graph.data.frame(d, directed = TRUE, vertices = NULL)
+```
+
+where
+
+`d`: a dataframe containing a symbolic edge list in the first two columns. Additional columns are considered as edge attributes. 
+
+`directed`:	Logical scalar, whether or not to create a directed graph.
+
+`vertices`:	 a dataframe with vertex metadata, or NULL. 
+
+Let's look at `routes_graph` closer
+
+```{r}
+class(routes_graph)
+routes_graph
+```
+
+As we learned earlier we  have easy access to nodes, edges, and their attributes with:
+```{r}
+E(routes_graph) # The edges of the "routes_graph" object
+V(routes_graph) # The vertices of the "routes_graph" object
+E(routes_graph)$weight # Edge attribute "weight"
+V(routes_graph)$name # Vertex attribute "name"
+```
+
+
+###Basic visualization of network
+
+Now that we have our `igraph network object`, let’s plot it.
+
+```{r}
+plot(routes_graph, edge.arrow.size=.4,vertex.label=NA)
+```
+That doesn’t look very good and needs further work...
+
+We can extract an edge list or a matrix from igraph networks.
+
+```{r}
+as_edgelist(routes_graph, names=T)
+as_adjacency_matrix(routes_graph, attr="weight")
+```
+
+Or data frames describing nodes and edges:
+
+```{r}
+as_data_frame(routes_graph, what="edges")
+as_data_frame(routes_graph, what="vertices")
+```
+
+But back to plotting with igraph
+
+`igraph` allows to use a wide set of parameters for plotting: 
+
+- node options (starting with `vertex.`) and 
+
+- edge options (starting with `edge.`). 
+
+A list of selected options is included below, but you can also see them if you use `?igraph.plotting`.
+
+**NODES**
+
+vertex.color Node color
+vertex.frame.color Node border color
+vertex.shape One of “none”, “circle”, “square”, “csquare”, “rectangle”
+“crectangle”, “vrectangle”, “pie”, “raster”, or “sphere”
+vertex.size Size of the node (default is 15)
+vertex.size2 The second size of the node (e.g. for a rectangle)
+vertex.label Character vector used to label the nodes
+vertex.label.family Font family of the label (e.g.“Times”, “Helvetica”)
+vertex.label.font Font: 1 plain, 2 bold, 3, italic, 4 bold italic, 5 symbol
+vertex.label.cex Font size (multiplication factor, device-dependent)
+vertex.label.dist Distance between the label and the vertex
+vertex.label.degree The position of the label in relation to the vertex,
+where 0 right, “pi” is left, “pi/2” is below, and “-pi/2” is above
+
+**EDGES**
+
+edge.color Edge color
+edge.width Edge width, defaults to 1
+edge.arrow.size Arrow size, defaults to 1
+edge.arrow.width Arrow width, defaults to 1
+edge.lty Line type, could be 0 or “blank”, 1 or “solid”, 2 or “dashed”,
+3 or “dotted”, 4 or “dotdash”, 5 or “longdash”, 6 or “twodash”
+edge.label Character vector used to label edges
+edge.label.family Font family of the label (e.g.“Times”, “Helvetica”)
+edge.label.font Font: 1 plain, 2 bold, 3, italic, 4 bold italic, 5 symbol
+edge.label.cex Font size for edge labels
+edge.curved Edge curvature, range 0-1 (FALSE sets it to 0, TRUE to 0.5)
+arrow.mode Vector specifying whether edges should have arrows,
+possible values: 0 no arrow, 1 back, 2 forward, 3 both
+
+**OTHER**
+
+margin Empty space margins around the plot, vector with length 4
+frame if TRUE, the plot will be framed
+main If set, adds a title to the plot
+sub If set, adds a subtitle to the plot
+
+Let's start changing the plot:
+
+We can set the node & edge options in two ways - the first one is to specify them in the plot()
+function, as we are doing below.
+
+```{r}
+# Plot with curved edges (edge.curved=.1) and reduce arrow size:
+plot(routes_graph, edge.arrow.size=.4, edge.curved=.1, vertex.label=NA)
+```
+```{r}
+# Set edge color to gray, and the node color to orange.
+# Replace the vertex label with the node names stored in "media"
+plot(routes_graph, edge.arrow.size=.2, edge.curved=0,
+vertex.color="orange", vertex.frame.color="#555555",
+vertex.label=V(routes_graph)$name, vertex.label.color="black",
+vertex.label.cex=.5)
+```
+The alternative way is to add attributes to the igraph object. 
+
+For example, we can add color or size network nodes based on location. We can alsochange the width of the edges based on their weight.
+
+FIX
+```{r eval=FALSE}
+# Generate colors based on media type:
+colrs <- c("gray50", "tomato", "gold")
+V(net)$color <- colrs[V(net)$media.type]
+# Set node size based on audience size:
+V(net)$size <- V(net)$audience.size*0.7
+# The labels are currently node IDs.
+# Setting them to NA will render no labels:
+V(net)$label.color <- "black"
+V(net)$label <- NA
+# Set edge width based on weight:
+E(net)$width <- E(net)$weight/6
+#change arrow size and edge color:
+E(net)$arrow.size <- .2
+E(net)$edge.color <- "gray80"
+E(net)$width <- 1+E(net)$weight/12
+```
+
+we can also add a legend explaining the meaning of the colors we used:
+
+```{r eval=FALSE}
+plot(net)
+legend(x=-1.5, y=-1.1, c("Newspaper","Television", "Online News"), pch=21,
+col="#777777", pt.bg=colrs, pt.cex=2, cex=.8, bty="n", ncol=1)
+```
+
+For semantic networks, we may plot only the labels of the nodes:
+
+```{r}
+plot(routes_graph, vertex.shape="none", vertex.label=V(net)$name,
+vertex.label.font=2, vertex.label.color="gray40",
+vertex.label.cex=.7, edge.color="gray85")
+```
+
+#### Network layouts
+
+**Network layouts** are  algorithms that return coordinates for each node in a network.
+
+We can set the layout in the plot function:
+
+`igraph` has a number of built-in layouts, including:
+
+```{r}
+# Randomly placed vertices
+l <- layout_randomly(routes_graph)
+plot(routes_graph, layout=l)
+```
+```{r}
+# Circle layout
+l <- layout_in_circle(routes_graph)
+plot(routes_graph, layout=l)
+```
+```{r}
+# 3D sphere layout
+l <- layout_on_sphere(routes_graph)
+plot(routes_graph, layout=l)
+39
+```
+
+One of the most used force-directed layout algorithms is `Fruchterman-Reingold`.
+
+`Force-directed layouts` is aimed nice-looking graph where edges are similar in length and cross
+each other as little as possible:
+
+- They simulate the graph as a physical system. 
+
+- Nodes are electrically charged particles that repulse each other when they get too close. 
+
+- The edges act as springs that attract connected nodes closer together. 
+
+- Thus, nodes are evenly distributed: nodes which share more connections are closer to each
+other. 
+
+Such algorithms can get slow, especially if you have a larger graph (e.g. 1000 vertices+)
+
+You can use the `weight` to increase the attraction forces among nodes connected by heavier edges.
+
+```{r}
+l <- layout_with_fr(routes_graph)
+plot(routes_graph, layout=l)
+```
+The layout is not deterministic - different runs will result in slightly different
+configurations. Saving the layout in l allows us to get the exact same result multiple times, which
+can be helpful if you want to plot the time evolution of a graph, or different relationships – and
+want nodes to stay in the same place in multiple plots.
+par(mfrow=c(2,2), mar=c(0,0,0,0)) # plot four figures - 2 rows, 2 columns
+plot(net.bg, layout=layout_with_fr)
+plot(net.bg, layout=layout_with_fr)
+plot(net.bg, layout=l)
+plot(net.bg, layout=l)
+40
+
+```{r}
+l <- layout_with_drl(routes_graph)
+
+plot(routes_graph, layout=l)
+
+```
+
+------------
+#### Measures
+
+**Density**: The proportion of present edges from all possible edges in the network.
+
+```{r}
+edge_density(routes_graph)
+```
+
+**Reciprocity** The proportion of reciprocated ties (for a directed network) (i.e. probability that the opposite counterpart of a directed edge is also included in the graph)
+
+```{r}
+reciprocity(routes_graph)
+```
+
+**Transitivity**:
+
+- **global** - ratio of triangles (direction disregarded) to connected triples.
+
+- **local** - ratio of triangles to connected triples *each vertex is part of*. This is calculated for each vertex given in the `vids` argument of  `transitivity()`.
+
+```{r}
+transitivity(routes_graph, type="global") # routes_graph is treated as an undirected network
+transitivity(routes_graph, mode="local") # same as above
+```
+
+
+**Diameter**:
+A network diameter is the longest geodesic distance = length of the shortest path between two nodes in the network. 
+
+`diameter()` returns the distance vs `get_diameter()` returns the nodes along the first found path of that distance.
+
+```{r}
+diameter(routes_graph, directed=F, weights=NA)
+diameter(routes_graph, directed=F)
+```
+
+

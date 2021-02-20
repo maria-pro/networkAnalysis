@@ -1,0 +1,142 @@
+---
+title: 'Case Study: Twitter'
+author: "Maria Prokofieva"
+date: "19/02/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Using network analysis for Twitter data
+
+Social media networks is the most "networks" that come to mind when I mentioned network analysis to "ordinary" people.
+
+So let's dig into them!
+
+In this case study we will focus on 
+
+**Network Models**: develop a model that describes the relationships between users
+
+**Key Players**: identify the most influential users in the network based on a different context
+
+**Tie Strength**: measure how strong the relationships are 
+
+**Network Cohesion**: To measure how cohesive entities in the networks towards network behavior.
+
+
+We are going to use our main libraries, so let's load them 
+
+```{r}
+#install.packages("tidyverse")
+#install.packages("igraph")
+
+
+
+library(igraph)
+library(ggraph)
+library(tidygraph)
+```
+
+```{r}
+# for data wrangling. very helpfull for preparing nodes and edges data
+library(tidyverse) 
+library(lubridate)
+
+# for building network and visualization 
+library(tidygraph)
+library(graphlayouts)
+# already included in tidygraph but just fyi
+
+#these packages are already included in tidygraph, but just for reference
+
+library(igraph)
+library(ggraph)
+
+# for crawling Twitter data 
+library(rtweet)
+# for visualizing
+library(extrafont)
+loadfonts(device = "pdf") 
+```
+
+To get the network model we will be creating a graph of the Twitter users for the collected data
+
+To get the Key Players in the network we will use the meausures of **centrality**.
+
+
+Now, let's startw with loading the twitter data. 
+
+We can use [`rtweet` package](https://cran.r-project.org/web/packages/rtweet/) to download it (and we are going to do this later!) but at this stage - let's work with the collected `.csv` file
+
+```{r}
+tweets <- read.csv("http://nodeassets.nbcnews.com/russian-twitter-trolls/tweets.csv",
+                   stringsAsFactors = F, sep = ",")
+```
+
+
+```{r}
+# gather teamalgoritma data
+user_Twitter <- lookup_users("rstudio")
+# get RStudio followers and its account details
+followers <- get_followers("rstudio",n = user_Twitter$followers_count,retryonratelimit = T)
+detail_followers <- lookup_users(followers$user_id)
+detail_followers <- data.frame(lapply(detail_followers,as.character),
+stringsAsFactors = F)
+```
+
+This data is on EXTEND 
+
+
+```{r}
+active_fol <- detail_followers %>% select(user_id,screen_name,created_at,followers_count,friends_count,favourites_count) %>%
+  mutate(created_at = ymd_hms(created_at),
+         followers_count = as.numeric(followers_count),
+         friends_count = as.numeric(friends_count),
+         favourites_count = as.numeric(favourites_count)) %>%
+  filter((followers_count > 100 & followers_count < 6000), friends_count > 75, favourites_count > 10, 
+         created_at > "2020-03-15") %>%
+  arrange(-followers_count)
+```
+
+```{r}
+flt_n <- function(x){
+  if(x > 1500){
+    x*0.5
+  }else{x*0.75}
+}
+```
+
+
+```{r}
+# Create empty list and name it after their screen name
+follower <- vector(mode = 'list', length = length(active_fol$screen_name))
+names(follower) <- active_fol$screen_name
+# 
+for (i in seq_along(active_fol$screen_name)) {
+  message("Getting followers for user #", i, "/130")
+  follower[[i]] <- get_followers(active_fol$screen_name[i], 
+                                  n = round(flt_n(active_fol$followers_count[i])), 
+                                retryonratelimit = TRUE)
+  
+  if(i %% 5 == 0){
+    message("sleep for 5 minutes")
+    Sys.sleep(5*60)
+    } 
+}
+```
+
+
+```{r}
+# convert list to dataframe
+follower_x <- bind_rows(foler, .id = "screen_name")
+active_fol_x <- active_fol %>% select(user_id,screen_name)
+# left join to convert screen_name into its user id
+follower_join <- left_join(follower_x, active_fol_x, by="screen_name")
+# subset to new dataframe with new column name and delete NA
+follower <- follower_join %>% select(user_id.x,user_id.y) %>%
+  setNames(c("follower","active_user")) %>% 
+  na.omit()
+```
+

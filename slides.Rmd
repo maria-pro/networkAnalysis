@@ -48,6 +48,10 @@ Theory and practical applications of network science to solve today's challenges
 
 [statnet](https://cran.r-project.org/web/packages/statnet/)
 
+[`ggraph`](https://cran.r-project.org/web/packages/ggraph/)
+
+[`tidygraph`] (https://cran.r-project.org/web/packages/tidygraph/) 
+
 ```{r}
 #install.packages("igraph","statnet", "ggraph", "tidygraph")
 
@@ -324,9 +328,7 @@ where L is the number of observed ties in the network.
 The maximum of the shortest distances between all node-pairs in the graph.
 
 ---
-# Graph measures
-
-## Shortest path 
+# Graph measures - Shortest path 
 
 - unweighted distance: the number of edges between two nodes
 
@@ -334,9 +336,7 @@ The maximum of the shortest distances between all node-pairs in the graph.
 
 IMAGE
 ---
-# Graph measures
-
-## Shortest path algorithms 
+# Graph measures - Shortest path algorithms 
 
 **Breadth-First Search(BFS)**: Start at the root node and explore all of the neighbor nodes at the present depth prior to moving on to the nodes at the next level.
 
@@ -344,7 +344,24 @@ IMAGE
 
 IMAGE
 ---
-# Node Measure
+# Node Measure - **Centrality**
+
+"Which node is the most important one in the network?" 
+
+- a function that assigns a numerical value to each vertex of a network according to its influence on the others. 
+
+- the importance of a node is determined by its position within a network. 
+
+- the meaning depends on the type of the network (e.g effective person in a social network or key train station in the urban networks).
+---
+# Node Measure - **Centrality**
+
+Centrality can be classified in *local* and *global*
+
+IMAGE
+
+---
+# Node Measure - **Centrality** - Local Centrality Measures
 
 **Degree Centrality**: Number of edges that a node has 
 = the number of links incident upon a node.
@@ -511,8 +528,9 @@ in `statnet` =vertices
 
 Create or import networks
 
+Examine network characteristics
 
-
+EXPAND
 ---
 # Network in R
 
@@ -529,30 +547,20 @@ Create or import networks
 #install.packages("igraph") #install igraph package if you are yet to install it
 library(igraph) #load igraph package
 ```
+---
+#`igraph` package
+
+- free  
+
+- available for Python, R, C/C++ and Mathematica.
+---
+#`igraph` package
+
+Let's do some practice...
+
+IMAGE
 
 ---
-#Creating network objects in `igraph``
-
-Let's create an *undirected* graph with 3 edges: 1–>2, 2–>3, 3–>1.
-
-```{r}
-g1 <- graph( edges=c(1,2, 2,3, 3, 1), n=3, directed=F)
-class(g1)
-g1
-plot(g1) # simple plot of the network
-```
----
-Let's do more!
-
-```{r}
-g2 <- graph( edges=c(1,2, 2,3, 3, 1), n=10, directed=F)
-class(g2)
-g2
-plot(g2) # how does it look like?
-
-```
-----
-# `make_graph` = `graph`
 
 ```{r eval=FALSE}
 make_graph(
@@ -741,46 +749,17 @@ solids <- list(make_graph("Tetrahedron"),
 plot(solids[[2]]) #Cubical graph
 ```
 ---
-# Graph structure information
-
-`vcount` and `ecount` return the number of vertex. 
-
-`neighbors` returns the number of neighbors for the vertex. is.directed and are.connected return boolean constants. You can use these function to know the type of graph (directed or undirected) and to determine whether there is a link between vertices v1and v2 in graph .get.edgelist function returns the list of edges in a graph. To obtain the adjacency matrix of a graph use get.adjacency function (you also need to install package ?Matrix?in this case).
 
 ---
-10 minutes + 10 minutes exercise
-statnet -creating network object and managing node and tie attributes
+# Importing network data and common network data tasks
 
-10 minutes + 10 minutes exercise
-igraph - same
 
-2.2. importing network data and common network data tasks
-
-10 minutes + 10 minutes exercise
-filtering network (based on vertex or edge attribute values)
-
-break - 10 minutes
 
 ---
 ##
 
 
----
-#Classification of graphs
 
-deterministic and stochastic
-
----
-# Creating graphs
-
-
----
-# Creating graphs - `igraph`
-
-Many functions for creating graphs:
-
-stochastic graph constructors are called ‘games’.
----
 
 #Functions for creating graphs
 
@@ -807,12 +786,5 @@ The igraph package includes some classic random graphs like the Erdos-Renyi GNP 
 Resources:
 
 [`statnet` workshop](https://github.com/statnet/Workshops/wiki)
-
-
-Demos are available```{r}
-demo(package="igraph")``````{r}
-```
-
-
 
 [Awesome list of resources](https://github.com/briatte/awesome-network-analysis)

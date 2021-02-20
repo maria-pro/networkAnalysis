@@ -9,6 +9,11 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE,
                       message=FALSE,
                       warning=FALSE)
+
+library(igraph)
+library(statnet)
+library(tidygraph)
+library(ggraph)
 ```
 
 # Practical Applications of Network Science: Workshop
@@ -18,7 +23,6 @@ This two-day workshop will include:
 2 days * 3hrs hands-on workshops in R
 
 Target: real-world applications of network science
-
 
 **Skill level**: introductory level 
 
@@ -32,285 +36,165 @@ Target: real-world applications of network science
 
 [`statnet`](https://cran.r-project.org/web/packages/statnet/)
 
-[`sna`](https://cran.r-project.org/web/packages/sna/)
+[`ggraph`](https://cran.r-project.org/web/packages/ggraph/)
+
+[`tidygraph`](https://cran.r-project.org/web/packages/tidygraph/) 
 
 *Datasets*
 
+
+[TidyTuesday French Train dataset]
+(https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2019/2019-02-26/small_trains.csv")
+
+
+### Resources
+
+[`statnet` workshop](https://github.com/statnet/Workshops/wiki)
+
+[Awesome list of resources](https://github.com/briatte/awesome-network-analysis)
+
 ## Tasks
 
-Install (if not yet installed) and load the `igraph` package
+1. Install (if not yet installed) and load the required packages
 
 ```{r}
-#install.packages("igraph")
-library(igraph)
+#install.packages("igraph", "statnet", "ggraph", "tidygraph")
+library(tidyverse)
+library(igraph, statnet)
 ```
 
-Creating a network object in `igraph`
-Let's move on to some specific graphs and graph models
+## 2. `Igraph`
+###Creating network objects from files
 
-**Empty graph**:
+####Dataset
+
+EXPAND
 
 ```{r}
-g<-graph.empty(n=10, directed=TRUE)
-plot(g)
+small_trains <- read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2019/2019-02-26/small_trains.csv")
+
+head(small_trains$departure_station)
+
 ```
-**Complete graph**: each pair of vertices has an edge connecting them, we use `LOOPS = FALSE` to not add self edges
+####Data preparation
+
+Let's create the **node list**:
+
+We need to isolate `distinct` stations from both the “departure_station” and “arrival_station” columns and then join the information from these columns together.
 
 ```{r}
-g<-graph.full(n=10, directed = FALSE, loops = FALSE)
-plot(g)
+routes_from <- small_trains %>%
+  distinct(departure_station) %>%
+  rename(label = departure_station)
+
+departure_station
+
+routes_to <- small_trains %>%
+  distinct(arrival_station) %>%
+  rename(label = arrival_station)
 ```
 
-**Stars**
-```{r}
-g<-graph.star(n=10, mode="out")
-plot(g)
-
-g<-graph.star(n=10, mode="in")
-plot(g)
-```
-
-**Rings**
-```{r}
-g<-graph.ring(n=10)
-```
-
-
-
-# Empty graph
-eg <- make_empty_graph(40)
-plot(eg, vertex.size=10, vertex.label=NA)
-
-# Full graph
-fg <- make_full_graph(40)
-plot(fg, vertex.size=10, vertex.label=NA)
-
-# Star graph 
-st <- make_star(40)
-plot(st, vertex.size=10, vertex.label=NA) 
-
-# Tree graph
-tr <- make_tree(40, children = 3, mode = "undirected")
-plot(tr, vertex.size=10, vertex.label=NA) 
-
-# Ring graph
-rn <- make_ring(40)
-plot(rn, vertex.size=10, vertex.label=NA)
-
-# Erdos-Renyi random graph 
-# ('n' is number of nodes, 'm' is the number of edges)
-er <- sample_gnm(n=100, m=40) 
-plot(er, vertex.size=6, vertex.label=NA)  
-
-# Watts-Strogatz small-world graph
-# Creates a lattice with 'dim' dimensions of 'size' nodes each, and rewires edges 
-# randomly with probability 'p'. You can allow 'loops' and 'multiple' edges.
-# The neighborhood in which edges are connected is 'nei'.
-sw <- sample_smallworld(dim=2, size=10, nei=1, p=0.1)
-plot(sw, vertex.size=6, vertex.label=NA, layout=layout_in_circle)
- 
-# Barabasi-Albert preferential attachment model for scale-free graphs
-# 'n' is number of nodes, 'power' is the power of attachment (1 is linear)
-# 'm' is the number of edges added on each time step 
- ba <-  sample_pa(n=100, power=1, m=1,  directed=F)
- plot(ba, vertex.size=6, vertex.label=NA)
- 
-#igraph can also give you some notable historical graphs. For instance:
- zach <- graph("Zachary") # the Zachary carate club
- plot(zach, vertex.size=10, vertex.label=NA)
-
-Now let's create more "complicated" graphs with the given list of edges
+And use a full join to include all unique places from both the departure_station and arrival_station.
 
 ```{r}
-edges <- c(1,2, 3,2, 2,4)
-g<-graph(edges, n=max(edges), directed=TRUE)
-plot(g)
-```
-
-Can we do a **named graph**? Sure we can!
-
-When you use vertex names in your edge list, you don't need the number of nodes
-
-```{r}
-g3 <- graph( c("expresso", "milk", "milk", "chocolate", "cream", "chocolate", "expresso", "cream")) # named vertices 
-plot(g3)
-```
-For smaller graphs we can use
-
-- ` - `for undirected tie, 
-
-- `+-` for pointing left or 
-
-- `-+` for directed ties  & right, 
-
-- `++` for a symmetric tie, and 
-
-- “:” for sets of vertices.
-
-```{r}
-
-plot(graph_from_literal("dogs"---"cats", "cats"---"mice")) # the number of dashes doesn't matter
-
-```
-### Working with network attributes, edges and verteces
-
-To access vertices and edges:
-
-```{r}
-E(g3) # The edges of the object
-
-V(g3) # The vertices of the object
-```
-To view the network in a matrix form
-
-```{r}
-g3[]
-```
-
-Add attributes to the network, vertices, or edges:
-
-```{r}
-V(g3)$name # automatically generated when we created the network.
-
-V(g3)$calories <- c("high", "medium", "high", "high")
-E(g3)$type <- "yumminess" # Edge attribute, assign "yumminess" to all edges
-E(g3)$weight <- 10 # Edge weight, setting all existing edges to 10
-```
-To examine attributes:
-```{r}
-edge_attr(g3)
-vertex_attr(g3)
-graph_attr(g3)
-```
-We can also set attributes using `set_edge_attr()`, `set_vertex_attr()`
-```{r}
-
-g3 <- set_graph_attr(g3, "calories", "yumminess")
-g3 <- set_graph_attr(g3, "time of day", "time")
-
-graph_attr_names(g3)
-graph_attr(g3, "calories")
-graph_attr(g3)
-
-```
-
-Let's delete the attribute 
-```{r}
-g3 <- delete_graph_attr(g3, "time of day")
-graph_attr(g3)
-plot(g3, edge.arrow.size=.5, vertex.label.color="red", vertex.label.dist=1.5,
-     vertex.color=c("green", "yellow")[1+(V(g3)$calories=="high")] ) 
-
-```
-
-How can we `simplify` the graph using `edge.attr.comb` to combine edge attributes:
-
-Options: 
-
-- `sum`, `mean`, `prod` (=product), `min`, `max`, `first`/`last` (selects the first/last edge's attribute). 
-
-- `ignore` to disregard/drop  the attribute 
-
-```{r}
-
-g3_simplified <- simplify(g3, remove.multiple = T, remove.loops = F, 
-                 edge.attr.comb=list(weight="sum", type="ignore") )
-plot(g3_simplified, vertex.label.dist=1.5)
-g3_simplified
-```
-
-# Let's take a look at the description of the igraph object.
-# Those will typically start with up to four letters:
-# 1. D or U, for a directed or undirected graph
-# 2. N for a named graph (where nodes have a name attribute)
-# 3. W for a weighted graph (where edges have a weight attribute)
-# 4. B for a bipartite (two-mode) graph (where nodes have a type attribute)
-#
-# The two numbers that follow refer to the number of nodes and edges in the graph. 
-# The description also lists graph, node & edge attributes, for example:
-# (g/c) - graph-level character attribute
-# (v/c) - vertex-level character attribute
-# (e/n) - edge-level numeric attribute
-
-
- 
-  # Rewiring a graph
- # 'each_edge()' is a rewiring method that changes the edge endpoints
- # uniformly randomly with a probability 'prob'.
- rn.rewired <- rewire(rn, each_edge(prob=0.1))
- plot(rn.rewired, vertex.size=10, vertex.label=NA)
- 
- # Rewire to connect vertices to other vertices at a certain distance. 
- rn.neigh = connect.neighborhood(rn, 5)
- plot(rn.neigh, vertex.size=8, vertex.label=NA) 
- 
- 
- # Combine graphs (disjoint union, assuming separate vertex sets): %du%
- plot(rn, vertex.size=10, vertex.label=NA) 
- plot(tr, vertex.size=10, vertex.label=NA) 
- plot(rn %du% tr, vertex.size=10, vertex.label=NA) 
-
-  
- 
-# ================ 3. Reading network data from files ================
-
- 
-rm(list = ls()) # clear the workspace again
-
-# Download the archive with the data files from http://bitly.com/netscix2016 
- 
-# Set the working directory to the folder containing the workshop files:
-setwd("C:/DOCS/Conferences/2016-NetSciX/NetSciX Workshop")  
- 
-# DATASET 1: edgelist 
-
-nodes <- read.csv("Dataset1-Media-Example-NODES.csv", header=T, as.is=T)
-links <- read.csv("Dataset1-Media-Example-EDGES.csv", header=T, as.is=T)
-
-# Examine the data:
+nodes <- full_join(routes_from, routes_to, by = "label")
 head(nodes)
-head(links)
-nrow(nodes); length(unique(nodes$id))
-nrow(links); nrow(unique(links[,c("from", "to")]))
+```
+Let's give unique IDs for each station
 
-# Collapse multiple links of the same type between the same two nodes
-# by summing their weights, using aggregate() by "from", "to", & "type":
-# (we don't use "simplify()" here so as not to collapse different link types)
-links <- aggregate(links[,3], links[,-3], sum)
-links <- links[order(links$from, links$to),]
-colnames(links)[4] <- "weight"
-rownames(links) <- NULL
+```{r}
+nodes <- nodes %>% rowid_to_column("id")
+head(nodes)
+```
+
+Let's create the **edge list**:
+
+```{r}
+per_route <- small_trains %>%  
+  group_by(departure_station, arrival_station) %>%
+  summarise(weight = mean(total_num_trips)) %>% 
+  ungroup()
+head(per_route)
+```
+But... we still have “departure_station” and “arrival_station” columns contain labels rather than IDs. 
+
+Let's link the IDs that have been assigned in nodes to each station in both the “departure_station” and “arrival_station” columns.
+
+```{r}
+edges <- per_route %>% 
+  left_join(nodes, by = c("departure_station" = "label")) %>% 
+  rename(from = id)
+
+edges <- edges %>% 
+  left_join(nodes, by = c("arrival_station" = "label")) %>% 
+  rename(to = id)
+
+head(edges)
+```
+Let's reorder the columns so that the dataset starts with “from” and “to” (IDs). We also do not need “departure_station” and “arrival_station” columns with the names of the stations.
+
+Let's use `select() function` to include the “from”, “to”, and “weight” columns.
+
+```{r}
+edges <- edges%>%
+  select(from, to, weight)
+
+head(edges)
+```
+Now `edges` and `nodes` provides us with all of the information necessary to create network objects with the `igraph` and `statnet`.
 
 
-# DATASET 2: matrix 
+###`statnet` - `network` object
 
-nodes2 <- read.csv("Dataset2-Media-User-Example-NODES.csv", header=T, as.is=T)
-links2 <- read.csv("Dataset2-Media-User-Example-EDGES.csv", header=T, row.names=1)
+To create a network object in `statnet` we use `network` function which comes with the following options:
 
-# Examine the data:
-head(nodes2)
-head(links2)
+```{r eval=FALSE}
+network(x, vertex.attr = NULL, vertex.attrnames = NULL,
+  directed = TRUE, hyper = FALSE, loops = FALSE, multiple = FALSE,
+  bipartite = FALSE, ...)
+```
 
-# links2 is an adjacency matrix for a two-mode network:
-links2 <- as.matrix(links2)
-dim(links2)
-dim(nodes2)
+where
+
+- `x`: a matrix giving the network structure in adjacency, incidence, or edgelist form
+
+- `vertex.attr`:	a list containing vertex attributes
+
+- `directed`: `TRUE` by default - should edges be interpreted as directed?
+
+- `loops`: `FALSE` by default - are hyperedges allowed?
+
+- `matrix.type`: 	
+one of "adjacency", "edgelist", "incidence"
+?
+```{r}
+routes_network <- network(edges, vertex.attr = nodes, matrix.type = "edgelist", ignore.eval = FALSE)
+
+```
+
+Let's see the class of the object:
+```{r}
+class(routes_network)
+
+```
+
+#### `igraph` object
+
+Let's convert the data to an `igraph` object. The format for the is:
 
 
-# ================ 4. Turning networks into igraph objects ================ 
- 
-library(igraph)
 
-#  ------->> DATASET 1 -------- 
-
-# Converting the data to an igraph object:
-# The graph.data.frame function, which takes two data frames: 'd' and 'vertices'.
-# 'd' describes the edges of the network - it should start with two columns 
-# containing the source and target node IDs for each network tie.
-# 'vertices' should start with a column of node IDs.
-# Any additional columns in either data frame are interpreted as attributes.
-
+```{r eval=FALSE}
 net <- graph_from_data_frame(d=links, vertices=nodes, directed=T) 
+```
+
+The `graph.data.frame` function, which takes two data frames: `d` and `vertices`.
+
+- `d` describes the edges of the network - it should start with two columns containing the source and target node IDs for each network tie.
+
+- `vertices` should start with a column of node IDs.
+
+- Any additional columns in the data frame are interpreted as attributes.
 
 # Examine the resulting object:
 class(net)

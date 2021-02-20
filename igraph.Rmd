@@ -1,0 +1,507 @@
+---
+title: "working with igraph package"
+author: "Maria Prokofieva"
+date: "18/02/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(igraph)
+library(statnet)
+library(tidygraph)
+library(ggraph)
+```
+
+### Working with `igraph`
+
+2.1 Creating a network object in `igraph`
+
+### Creating network objects in `igraph``
+
+Let's create an *undirected* graph with 3 edges: 1–>2, 2–>3, 3–>1.
+
+```{r}
+g1 <- graph(edges=c(1,2, 2,3, 3, 1), n=3, directed=F)
+class(g1)
+
+g1
+plot(g1) # simple plot of the network
+```
+
+Let's do more!
+
+```{r}
+g2 <- graph( edges=c(1,2, 2,3, 3, 1), n=10, directed=F)
+class(g2)
+g2
+plot(g2) # how does it look like?
+
+```
+
+Let's move on to some specific graphs and graph models
+
+**Empty graph**: `graph.empty` or `make_empty_graph`
+```{r}
+g<-graph.empty(n=10, directed=TRUE)
+
+#g<-make_empty_graph(n=10, directed=TRUE)
+plot(g)
+```
+
+**Complete graph**: each pair of vertices has an edge connecting them, we use `LOOPS = FALSE` to not add self edges
+
+We can use `graph.full` OR `make_full_graph`
+
+```{r}
+g<-graph.full(n=10, directed = FALSE, loops = FALSE)
+plot(g)
+```
+
+**Stars**
+```{r}
+g<-graph.star(n=10, mode="out") #or make_star()
+plot(g)
+
+g<-graph.star(n=10, mode="in")
+plot(g)
+```
+
+**Rings**
+```{r}
+g<-graph.ring(n=10) #or make_ring()
+```
+**Task**: 
+
+- create a star graph with 7 vertices pointed to the center
+
+- create a full directed graph with 12 vertices and no loops
+
+`igraph` can also create some notable historical graphs, such as [Zachary carate club](https://en.wikipedia.org/wiki/Zachary%27s_karate_club)
+
+```{r}
+ zach <- graph("Zachary") # the Zachary carate club
+zach
+ plot(zach, vertex.size=10, vertex.label=NA)
+```
+
+The description of the igraph object typically start with up to four letters:
+
+`D` or `U`, for a directed or undirected graph
+
+`N` for a named graph (where nodes have a name attribute)
+
+`W` for a weighted graph (where edges have a weight attribute)
+
+`B` for a bipartite (two-mode) graph (where nodes have a type attribute)
+
+The two numbers that follow refer to the number of nodes and edges in the graph. 
+
+The description also lists graph, node & edge attributes, e.g.:
+
+`(g/c)` - graph-level character attribute
+
+`(v/c)` - vertex-level character attribute
+
+`(e/n)` - edge-level numeric attribute
+
+Now let's create more "complicated" graphs with the given list of edges
+
+```{r}
+edges <- c(1,2, 3,2, 2,4)
+g<-graph(edges, n=max(edges), directed=TRUE)
+plot(g)
+```
+
+Can we do a **named graph**? Sure we can!
+
+When you use vertex names in your edge list, you don't need the number of nodes
+
+```{r}
+g3 <- graph( c("expresso", "milk", "milk", "chocolate", "cream", "chocolate", "expresso", "cream")) # named vertices 
+plot(g3)
+```
+For smaller graphs we can use
+
+- ` - `for undirected tie, 
+
+- `+-` for pointing left or 
+
+- `-+` for directed ties  & right, 
+
+- `++` for a symmetric tie, and 
+
+- “:” for sets of vertices.
+
+```{r}
+
+plot(graph_from_literal("dogs"---"cats", "cats"---"mice")) # the number of dashes doesn't matter
+
+```
+**Task**
+
+- create a named graph `family` with the nodes=your family members/relates/friends - try to keep it under 20!
+
+Use the directed graph to show your family tree and connections
+
+------------------
+
+### Graph structure information
+
+To access vertices and edges:
+
+```{r}
+E(g3) # The edges of the object
+
+V(g3) # The vertices of the object
+```
+To view the network in a matrix form
+
+```{r}
+g3[]
+```
+
+`vcount` and `ecount` return the number of vertex / number of edges
+
+```{r}
+edges <- c(1,2, 3,2, 1,4)
+g<-graph(edges, n=max(edges), directed=TRUE)
+vcount(g)
+ecount(g)
+```
+
+`neighbors` returns the number of neighbors for the vertex. A vertex is a **neighbor** of another one, if they are incident to the same edge, i.e.  the two vertices are adjacent
+
+```{r}
+
+neighbors(g, V(g)[1])
+
+zachary_graph <- make_graph("Zachary")
+plot(zachary_graph)
+n17 <- neighbors(zachary_graph, 17)
+n7 <- neighbors(zachary_graph, 7)
+intersection(n17, n7)
+
+```
+
+`is_directed`: directed/undirected  type of graph  
+
+`are_adjacent`:is there a link between vertices v1 and v2 in graph 
+
+```{r}
+is_directed(g)
+
+are_adjacent(zachary_graph, n17, n7)
+
+```
+
+`get.edgelist`: returns the list of edges in a graph. 
+
+
+
+```{r}
+get.edgelist(g)
+```
+
+`get.adjacency`: to get the adjacency matrix of a graph.
+
+```{r}
+get.adjacency(zachary_graph)
+
+```
+
+**Task**
+
+In the previous task you created the named graph `family` with the nodes=your family members/relates/friends:
+
+- show the number of verices/edges in your graph 
+
+- display the edgelist and adjacency matrix
+
+----------
+
+### Working with network attributes, edges and verteces
+
+Compared to the matrix, network objects have the ability to store additional **attribute** information about the nodes and ties within the same network object.
+
+Add attributes to the network, vertices, or edges:
+
+```{r}
+V(g3)$name # automatically generated when we created the network.
+
+V(g3)$calories <- c("high", "medium", "high", "high")
+E(g3)$type <- "yumminess" # Edge attribute, assign "yumminess" to all edges
+E(g3)$weight <- 10 # Edge weight, setting all existing edges to 10
+```
+To examine attributes:
+```{r}
+edge_attr(g3)
+vertex_attr(g3)
+graph_attr(g3)
+```
+We can also set attributes using `set_edge_attr()`, `set_vertex_attr()`
+
+```{r}
+g3 <- set_graph_attr(g3, "calories", "yumminess")
+g3 <- set_graph_attr(g3, "time of day", "time")
+
+graph_attr_names(g3)
+graph_attr(g3, "calories")
+graph_attr(g3)
+```
+
+Let's delete the attribute 
+```{r}
+g3 <- delete_graph_attr(g3, "time of day")
+graph_attr(g3)
+plot(g3, edge.arrow.size=.5, vertex.label.color="red", vertex.label.dist=1.5,
+     vertex.color=c("green", "yellow")[1+(V(g3)$calories=="high")] ) 
+
+```
+
+How can we `simplify` the graph using `edge.attr.comb` to combine edge attributes:
+
+Options: 
+
+- `sum`, `mean`, `prod` (=product), `min`, `max`, `first`/`last` (selects the first/last edge's attribute). 
+
+- `ignore` to disregard/drop  the attribute 
+
+```{r}
+
+g3_simplified <- simplify(g3, remove.multiple = T, remove.loops = F, 
+                 edge.attr.comb=list(weight="sum", type="ignore") )
+plot(g3_simplified, vertex.label.dist=1.5)
+g3_simplified
+```
+
+**Task**
+
+In the previous task you created the named graph `family` with the nodes=your family members/relates/friends:
+
+- add an attribute to vertices (e.g gender)
+
+- add an attribute to edges specifying the type of relations (e.g. good, love, well_it_is_family)
+
+- remove the last attribute you added to edges (they'd better not know!)
+----------
+
+### Modifying the graph
+
+You can change the graph by adding more vertices and/or edges
+
+```{r eval=FALSE}
+
+add_edges(graph, edges, ..., attr=list())
+add_vertices(graph, vertices, ..., attr=list())
+```
+
+Let's create an empty graph and add edges and vertices to it. We will be adding an attribute `color` to edges and using a new value for `color` for new members.
+
+```{r}
+g <- make_empty_graph(n = 7) %>%
+  add_edges(c(1,2, 2,3, 3,4, 4,5, 6,7)) %>%
+  set_edge_attr("color", value = "green") %>%
+  add_edges(c(5,1), color = "red")
+E(g)[[]]
+plot(g)
+```
+
+Let's do the same for vertices
+
+```{r eval=FALSE}
+add_vertices(graph, nv, ..., attr = list())
+```
+
+where `nv` is the number of vertices to add
+
+```{r}
+g <- g %>%
+  add_vertices(8, color = "pink") %>%
+  add_vertices(9, color = "purple") %>%
+  add_edges(c(7,8, 8,1, 9,1, 9,2))
+g
+V(g)[[]]
+plot(g)
+  
+```
+**Task**
+
+In the previous task you created the named graph `family` with the nodes=your family members/relates/friends:
+
+### Graphs import / export
+
+We are going to talk about importing graphs in more details when we are going to  go through case studies. For now, you can use the following functions from `igraph`:
+
+- `read.graph()` to load graph using edgelist
+
+- `graph.adjacency()` from adjacency matrix: you can load your matrix using `read_csv()` (from `tidyverse`) to load the dataset, then convert it to a matrix using `as.matrix()` function and then using this matrix in `graph.adjacency()`
+
+- `graph.data.frame()` to import from a dataframe/table
+
+To export your graph you can use `write_graph()`to save it in different formats.
+
+```{r eval=FALSE}
+write_graph(
+  graph,
+  file,
+  format = c("edgelist", "pajek", "ncol", "lgl", "graphml", "dimacs", "gml", "dot",
+    "leda")
+)
+```
+
+
+**Task**
+
+In the previous task you created the named graph `family` with the nodes=your family members/relates/friends:
+
+Save your graph as a pdf file in your working directory
+  -
+
+### Graph visualization
+
+Graph visualization is a HUGE topic and we are going to talk about that in details in the second half of the workshop
+
+-----
+
+**Final tasks to summarize**
+
+Create a ring graph with random number of vertex (between 10 and 15). *HINT* use `sample() function to generate the random number. 
+
+```{r eval=FALSE}
+sample(x, size, replace = FALSE, prob = NULL)
+
+```
+where  
+
+- `x` is a vector of elements to choose from
+
+- `size` is a non-negative integer giving the number of items to choose.
+
+Use the functions covered earlier to answer the following questions (do not plot!):
+
+1. How many edges and vertices in this graph? 
+
+2. Print neighbors of the 10th vertex, the incident edges of this vertex. 
+
+3. Are the 3rd and the 13th vertices connected? 
+
+4. Are the 2nd and the 5th vertices also connected ? 
+
+5. Now, DO a plot of the graph :)
+
+*Solutions*
+```{r}
+
+n <-sample(10:15,1)
+
+g <- graph.ring(n)
+
+vcount(g)
+
+ecount(g)
+
+neighbors(g, 10)
+
+incident(g, 10)
+
+
+are.connected(g, 3, 10)
+
+are.connected(g, 2, 5)
+
+plot(g, layout = layout.fruchterman.reingold,vertex.label=V(g)$number, edge.arrow.size=0.5)
+
+```
+---------
+Let's do more:
+
+1. Create an empty undirected graph with 6 vertices. 
+
+2. Add edges between the following nodes: 1 and 3, 1 and 5, 5 and 6,  and 1 and 5. 
+
+3. Plot this graph. 
+
+4. Add the 7th vertex and connect it to that which has the most number of neighbors. 
+
+5. Assign names to all vertices (e.g. use days of weeks) and some random weights to all of edges (see the previous example for random values between 0 and 1). 
+
+6. Print the adjacency matrix with weights.
+
+
+*Solutions*
+```{r}
+
+g <- graph.empty (5, directed = FALSE)
+
+new_edges <- c(1,3, 1,5, 2,5, 4,5)
+
+g <- add_edges(g, new_edges)
+
+plot(g)
+
+g <- add_vertices(g, 1)
+
+g <- add_edges(g, c(6,5))
+
+V(g)$name <- letters[1:vcount(g)]
+
+E(g)$weight <- runif(ecount(g))
+
+get.adjacency(g, attr="weight")
+
+plot(g, layout = layout.fruchterman.reingold,vertex.label=V(g)$number)
+```
+
+Create a star graph with 8 edges. Next, assign random numbers between 1 and 50 to vertices and select vertices for which this value is less than 30, set the color of these vertices to green.
+
+*Solutions*
+```{r}
+
+g <- graph.star(8)
+
+V(g)$number <- sample(1:50, vcount(g), replace=TRUE)
+
+V(g)$color <- "grey"
+
+V(g)[ number < 30 ]$color <- "green"
+
+plot(g, layout=layout.circle, vertex.color=V(g)$color,
+
+         vertex.label=V(g)$number)
+
+```
+
+Create a complete graph with 5 edges. Next, assign random weights between 0 and 1 to all of edges. Set width of edges to 2 and color to green for those of them that have weight less than 0.5, set the width value to 1, color to red for others.
+
+*Solutions*
+```{r}
+
+g <- graph.full(5)
+
+E(g)$weight <- runif(ecount(g))
+
+E(g)$width <- 1
+
+E(g)$color <- "red"
+
+E(g)[ weight < 0.5 ]$width <- 2
+
+E(g)[ weight < 0.5 ]$color <- "green"
+
+plot(g)
+
+```
+
+---------
+
+## Case study - French trains
+
+Link
+
+
+
+
+
+
+

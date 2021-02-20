@@ -9,8 +9,8 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-
 # Network Analysis of tweets
+----
 
 # Network Analysis of Game of Thrones
 
@@ -22,3 +22,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## PageRank to find the most important character
 
+## Exploring correlation between different measures
+
+
+##
