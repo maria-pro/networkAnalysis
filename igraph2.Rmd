@@ -68,7 +68,7 @@ routes_from <- small_trains %>%
   distinct(departure_station, service) %>%
   rename(label = departure_station)
 
-nodes_attributes<-test %>%
+nodes_attributes<-small_trains %>%
   select(departure_station, late_depart, late_arrive)
 
 head(routes_from)
@@ -186,7 +186,7 @@ We can extract an edge list or a matrix from igraph networks.
 
 ```{r}
 as_edgelist(routes_graph, names=T)  %>% head()
-as_adjacency_matrix(routes_graph, attr="weight")  %>% head()
+as_adjacency_matrix(routes_graph)  %>% head()
 ```
 
 Or data frames describing nodes and edges:
