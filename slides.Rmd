@@ -7,18 +7,7 @@ date: "2021"
 output:
   xaringan::moon_reader:
     lib_dir: libs
-    nature:
-      ratio: "16:9"
-
-      highlightStyle: github
-      highlightLines: true
-      countIncrementalSlides: false
-      
-      
-output:
-  xaringan::moon_reader:
-    lib_dir: libs
-    css: ["shinobi", "ninjutsu", "css/slides.css"]
+    css: ["shinobi", "ninjutsu"]
     seal: true
     self_contained: false
     nature:
@@ -37,44 +26,54 @@ knitr::opts_chunk$set(echo = TRUE,
                       fig.width = 8,
                       fig.align = "center")
 ```
-#Practical Applications of Network Science: Workshop:
+background-image: url("img/bg.jpg")
 
-
-Theory and practical applications of network science to solve today's challenges
----
-#Packages to use
-
-[igraph](https://igraph.org/r/)
-
-[statnet](https://cran.r-project.org/web/packages/statnet/)
-
-[`ggraph`](https://cran.r-project.org/web/packages/ggraph/)
-
-[`tidygraph`] (https://cran.r-project.org/web/packages/tidygraph/) 
-
-```{r}
-#install.packages("igraph","statnet", "ggraph", "tidygraph")
-
-#load libraries
-library (igraph)
-library (statnet)
-library(ggraph)
-library(tidygraph)
-```
 ---
 
-# Big task:
+background-image: url("img/flights.jpg")
 
-(apart from conquering the universe)
-
-complete a small project in R using social network analysis, using the provided dataset
-
-# Smaller tasks:
-
-- see each topic!
 ---
-# Network science:
 
+background-image: url("img/k_map.jpg")
+
+---
+# Well - let's warm  up ...
+
+In the center of the river, there lay 2 islands that were connected to each other and the river banks by 7 bridges.
+
+Is there a route that would allow someone to cross all 7 bridges without crossing any of them more than once?
+
+![](img/k3.jpg)
+---
+# Seven Bridges of Königsberg
+
+Leonhard Euler:
+
+![](img/le.jpeg)
+
+
+*"... this type of solution bears little relationship to mathematics, and I do not understand why you expect a mathematician to produce it..."*
+
+... and then ...
+
+*"...This question is so banal, but seemed to me worthy of attention in that [neither] geometry, nor algebra, nor even the art of counting was sufficient to solve it."*
+
+## **... NO SOLUTION!!!!**
+
+and then... in 1875, the people of Königsberg decided to build a new bridge...
+
+---
+# Why Network Science?
+
+If you have any of these questions:
+
+- What are the elements in the system?
+
+- What are the role of those elements in the system?
+
+- What are the processes/interactions that build systems?
+
+- What are the dynamics of changes in the system?(e.g. spread of the disease, etc.)
 
 ---
 # Why Network Science?
@@ -85,24 +84,9 @@ how ... interact
 
 how ... that influence the change in ... across space and time
 
-**Overall**: use network analysis if you need to understand the **system**: 
+### **Overall**: use network analysis if you need to understand the **system**: 
   
   = how **interactions** or **connections** between **components** make up a **system**
-
-
-IMAGE
----
-# Why Network Science?
-
-If you have any of these questions:
-
-- What are the elements in the system?
-
-- What are the role of those elements in the system
-
-- What are the processes/interactions that build systems?
-
-- What are the dynamics of changes in the system?(e.g. spread of the disease, etc.)
 ---
 # Applications 
 
@@ -117,121 +101,114 @@ social networks - any!
 - biological systems: genes regulation systems, metabolic systems
 
 - ANY SYSTEM 
----
-# Why R?
 
-- free, cross-platform, open-source programming language
-
-- large community of users and large community of academic users
-
-- dynamic growth with new and improved packages
-
-- Comprehensive R Archive Network (CRAN): repository with R packages that have been vetted and deposited on a server
----
-# R Packages
-
-This tutorial we will use:
-
-- `igraph`
-
-- `statnet`
-
-Also
-- `tidygraph`
-
-- `ggraph` 
-
-Let's talk about them briefly to dig into more details in the practical part.
----
-#`igraph` package
-
-['igraph'](https://igraph.org/) is a collection for creating and manipulating graphs and analyzing networks. 
-
-- written in C and also exists as Python and R packages.
-
-- [`igraph` package](https://igraph.org/r/)
----
-#`statnet` package
-
-['statnet'](http://statnet.org/) is a collection of R packages for 
-
-- management, 
-
-- exploration, 
-
-- statistical analysis, 
-
-- simulation and 
-
-- vizualization of network data. 
-
-- based on [Exponential-family Random Graph Models (ERGMs)](https://en.wikipedia.org/wiki/Exponential_random_graph_models).  
----
-#`ggraph`
-
-[`ggraph`](https://cran.r-project.org/web/packages/ggraph/) is an extension of `ggplot2` for graph visualizations
-
-- use the same layer by layer philosophy
+![](img/m_map.png)
 
 ---
-# `tidygraph`
+# LinkedIn
 
-[`tidygraph`] (https://cran.r-project.org/web/packages/tidygraph/) is a tidy API for graph manipulation
+![](img/sn.png)
 
-- Provides a way for dplyr to interact with graphs
+### What is this?
 ---
-# Datasets
+# LinkedIn
 
-[`networkdata` package](http://networkrepository.com/): a large collection of dataset for network science from wide variety of areas
+![](img/sn.png)
 
-```{r}
-#install.packages("remotes")
-#remotes::install_github("schochastics/networkdata")
-library(networkdata)
-```
 
-```{r eval=FALSE}
-
-#to see the list of datasets
-data(package = "networkdata")
-```
-
+### a collection of vertices, V, and edges, E.
 ---
-# What is a network?
+# Key concepts:
 
-Graph theory
+![](img/graph.png)
 
-A **graph** is made up of **vertices** (also called **nodes**) that are connected by **edges** (also called **links** or relationships).
+A **graph** is a number of points that are connected by lines. 
 
-IMAGE
+Each point is usually called a **vertex** = node (more than one are called **vertices** = nodes)
+
+Lines are called **edges**.
 ---
-# Edges 
+# Key concepts:
 
-E: observed ties in a network (also called edges, arcs, or relations)
+![](img/graph.png)
 
-- can be directed or undirected
+**Incident**: Any edge is incident to 2 vertices.
 
-An **undirected tie** is a tie with no direction (e.g. collaborarion)
-
-A **directed tie** is a tie with the direction (e.g. borrowing) = *arcs*!
-
-graphDir.png
-
-graphUnd.png
-
+x is incident to A and E. 
 ---
-#Weigthed graph
-A directed network where the edges and nodes have different weights, as indicated by their sizes.
+# Key concepts:
 
-IMAGE
-graphW.png
+![](img/graph.png)
 
---
+**Adjacent**: Adjacent vertices are connected by an edge.
 
+G is adjacent to D, F, and H because there is some edge going from G to all these other vertices. 
+---
+# Key concepts:
 
-Single-Mode and Multi-Mode
+![](img/graph.png)
+
+**Isolated**: B is isolated because it’s not connected to any other vertices
 
 ---
+# Key concepts:
+
+![](img/graph.png)
+
+**Degree**: The degree is just the number of connections a vertex has
+
+A has a degree of 2, B has a degree of 0, and F has a degree of 4. 
+
+---
+# Key concepts:
+
+![](img/d_ind_graph.png)
+
+![](img/one_way.jpeg)
+---
+# Key concepts:
+
+![](img/w_unw.png)
+
+**Weight**: a value representing the length of the edge.
+---
+class: center, middle
+
+# Ways to represent graphs
+
+### non-linear data structure (the visual representation) -> linear data structure ???
+
+---
+# Edge lists
+
+
+unordered list of edges
+
+
+![](img/edgeList.png)
+
+Practical, but not efficient for really dense graphs 
+???
+
+Image credit: [Vaidehi Joshi](https://medium.com/basecs/from-theory-to-practice-representing-graphs-cfd782c5be38)
+
+---
+# Adjacency lists
+
+![](img/adjus.jpeg)
+**Adjacency lists**: lists out the connections for each vertex
+
+An **adjacency matrix** is a matrix representation of exactly which nodes in a graph contain edges between them
+
+???
+Image credit: [Vaidehi Joshi](https://medium.com/basecs/from-theory-to-practice-representing-graphs-cfd782c5be38)
+---
+
+# Example
+
+![](img/example.png)
+---
+
 # Questions to ask about a network:
 
 - How large the network is?
@@ -247,45 +224,37 @@ Single-Mode and Multi-Mode
 ---
 # Measures
 
-Graph measures
+## Graph measures
 
-Node measures
+## Node measures
 
-Edge measures
+## Edge measures
 
-Network measure
+## Network measure
 
 ---
-graphex1.jpg
 
-Network of connections between devices within the Internet. Courtesy of Steve Jurvetson.http://www.flickr.com/photos/jurvetson/916142/
+# Network of connections between devices within the Internet
+
+![](img/graphex1.jpg)
+???
+Image credit: [Network of connections between devices within the Internet. Courtesy of Steve Jurvetson](http://www.flickr.com/photos/jurvetson/916142/)
+
 ---
-#Network characteristics
 
-```{r}
-summary(flo_network)
-```
----
-#Graph measures
+# Graph measures
 
-**Size**
+## **Size**
 
 = the number of members (e.g nodes, vertices or actors)
 
 Some books may refer to the number of nodes, while the number of edges is less common.
 
-
-```{r eval=FALSE}
-network.size()```{r eval= FALSE}
-
-```{r}
-network.size(Moreno)
-network.size(flo_network)
-```
 ---
+
 # Graph measures
 
-**Density** 
+##  **Density** 
 
 proportion of observed ties in a network to the maximum number of possible ties.
 
@@ -296,55 +265,30 @@ more interconnected networks have density closer to 1.
 ---
 # Graph measures
 
-**Density** 
+##  **Density** 
 
 Density of directed network:
 
 (directed network is a network with a direction)
 
-##IMAGE DIRECTED NETWORK
-
 Number of observed ties `L` to the maximum number of possible ties among `k` actors `k ∗ (k−1)`, so the formula for density is:
 
-`density= L/(k*k-1))
+### `density= L/(k*k-1))
 
 Loops are excluded! (= a tie between a node and itself)
-----
-# Graph measures
-
-**Density** 
 
 Density of undirected network
 
-##IMAGE UNDIRECTED NETWORK
-,
 where L is the number of observed ties in the network.
 
----
-# Graph measures
-
-**Diameter**
+##  **Diameter**
 
 The maximum of the shortest distances between all node-pairs in the graph.
-
 ---
-# Graph measures - Shortest path 
 
-- unweighted distance: the number of edges between two nodes
+# Node Measure 
 
--  weighted distance: the sum of weights between two nodes.
-
-IMAGE
----
-# Graph measures - Shortest path algorithms 
-
-**Breadth-First Search(BFS)**: Start at the root node and explore all of the neighbor nodes at the present depth prior to moving on to the nodes at the next level.
-
-**Depth-First Search(DFS)**: Start at the root node and explore as far as possible along each branch before moving on to the branches at the next level.
-
-IMAGE
----
-# Node Measure - **Centrality**
+##**Centrality**
 
 "Which node is the most important one in the network?" 
 
@@ -353,21 +297,25 @@ IMAGE
 - the importance of a node is determined by its position within a network. 
 
 - the meaning depends on the type of the network (e.g effective person in a social network or key train station in the urban networks).
+
 ---
-# Node Measure - **Centrality**
+
+# Node Measure
+
+## **Centrality**
 
 Centrality can be classified in *local* and *global*
 
-IMAGE
-
 ---
-# Node Measure - **Centrality** - Local Centrality Measures
+# Node Measure - **Centrality**
+
+## Local Centrality Measures
 
 **Degree Centrality**: Number of edges that a node has 
 = the number of links incident upon a node.
 
-**Eigenvector Centrality**: 
 ---
+
 # Node Measure
 
 **Eigencentrality** is a measure of the importance of a node in a network. 
@@ -377,133 +325,174 @@ IMAGE
 Node high on eigenvector centrality is essentially connected to many high degree nodes.
 
 ---
+
 # Node Measure
 
-**Closeness Centrality** 
+##  **Closeness Centrality** 
 
 In a connected graph, the **normalized closeness** of a node is the average length of the shortest path between the node and all other nodes in the graph. 
 
 The more central a node is, the closer it is to all other nodes.
 
 ---
+
 # Node Measure
 
-**Betweenness Centrality** 
+##  **Betweenness Centrality** 
 
 The **normalized betweenness** of a node is the number of times a node acts as a bridge along the shortest path between two other nodes.
 
 ---
+
 # Node Measure
 
-IMAGE
+![](img/centrality.png)
 
-centrality.png
 ---
+
 # Network Measure
 
-**Subgraphs**: 
+## **Subgraphs**: 
 
 Subset of nodes in a network, along with all of the edges linking these nodes.
 
-**Components** 
+## **Components** 
 
 A subgraph of the network that is disconnected from each other.
 
 ---
+
 # Network Measure
 
-**Subgraphs** and **Components** 
+## **Subgraphs** and **Components** 
 
-IMAGE components.png
-
+![](img/components.png)
 ---
-# Network Measure
 
-**Islands** 
+# Why R?
 
-Only retain edges that have weight larger than threshold.
+- free, cross-platform, open-source programming language
 
-IMAGE islands.png
----
-# Network Measure
+- large community of users and large community of academic users
 
-**Ego Network**
+- dynamic growth with new and improved packages
 
-Subnetworks that are centered on a certain node (the ego node) by running a breadth-first search starting at the ego node, and limiting depth smaller than 3.
-
-IMAGE islands.png
----
-# Network Measure
-
-**Clustering coefficient**
-
-Measure the proportion of the ego’s friends that are also friends with each other and the degree to which nodes in a graph tend to cluster together.
-
----
-# Network Measure
-
-**Cliques**
-
-Define as a maximal completely connected subgraph of an undirected graph that every two distinct nodes in the clique are adjacent.
-
----
-# Adjacency matrix 
-
-unweighted networks of N nodes without multiple connections = N×N Adjacency matrix
-
-IMAGE
----
-# How to store information about the network?
-
-- rectangular data structures?
-
-= rows are observations, columns are variables?
+- Comprehensive R Archive Network (CRAN): repository with R packages that have been vetted and deposited on a server
 
 ---
 
-IMAGE WITH NETWORK EXAMPLE AND QUESTION TO STORE IT
+# Packages to use
 
+[igraph](https://igraph.org/r/)
 
-PROBLEM: how to fit in relational structure?
+[statnet](https://cran.r-project.org/web/packages/statnet/)
+
+[`ggraph`](https://cran.r-project.org/web/packages/ggraph/)
+
+[`tidygraph`] (https://cran.r-project.org/web/packages/tidygraph/) 
+
+```{r eval=FALSE}
+#install.packages("igraph","statnet", "ggraph", "tidygraph")
+
+#load libraries
+library (igraph)
+library (statnet)
+library(ggraph)
+library(tidygraph)
+```
+
 ---
-#Network data structure
 
-observation/variable -> tie (=relationship between members of a network)
+# Big task:
+
+(apart from conquering the universe)
+
+complete a small project in R using social network analysis, using the provided dataset
+
+# Smaller tasks:
+
+- see each topic!
 
 ---
-# Sociomatrices
 
-- a matrix containing network information
+# R Packages
 
-- a square matrix where a 1 indicates a tie between two nodes, and a 0 indicates no tie
+This tutorial we will use:
 
-- also called **adjacency matrix**:  1s in the cells = nodes are adjacent to one another in the network
+- `igraph`
 
-IMAGE
-----
-# Sociomatrices
+- `statnet`
 
-Non-directed network: the sociomatrix is symmetric around the diagonal. 
+Also
+- `tidygraph`
 
-Directed network: EXAMPLE
+- `ggraph` 
 
-Simple networks(no self-ties):diagonals are all zeros
+Let's talk about them briefly to dig into more details in the practical part.
+
 ---
-# Sociomatrices
 
-EXAMPLE
+#`igraph` package
 
-Disadvantages: sparse sociomatrices with large networks
+['igraph'](https://igraph.org/) is a collection for creating and manipulating graphs and analyzing networks. 
+
+- written in C and also exists as Python and R packages.
+
+- [`igraph` package](https://igraph.org/r/)
+
 ---
-# Edge list
 
-=lists every tie in the network. 
+#`statnet` package
 
-= Each row = a single tie from the node listed in the first column to the node listed in the second column.
+['statnet'](http://statnet.org/) is a collection of R packages for 
 
-- much more efficient for large networks
+- management, 
 
-IMAGE
+- exploration, 
+
+- statistical analysis, 
+
+- simulation and 
+
+- vizualization of network data. 
+
+- based on [Exponential-family Random Graph Models (ERGMs)](https://en.wikipedia.org/wiki/Exponential_random_graph_models).  
+
+---
+
+#`ggraph`
+
+[`ggraph`](https://cran.r-project.org/web/packages/ggraph/) is an extension of `ggplot2` for graph visualizations
+
+- use the same layer by layer philosophy
+
+---
+
+# `tidygraph`
+
+[`tidygraph`] (https://cran.r-project.org/web/packages/tidygraph/) is a tidy API for graph manipulation
+
+- Provides a way for dplyr to interact with graphs
+
+---
+
+# Datasets
+
+[`networkdata` package](http://networkrepository.com/): a large collection of dataset for network science from wide variety of areas
+
+```{r eval=FALSE}
+install.packages("remotes")
+remotes::install_github("schochastics/networkdata")
+library(networkdata)
+
+```
+
+```{r eval=FALSE}
+
+#to see the list of datasets
+data(package = "networkdata")
+```
+
 ---
 
 # Network Data objects
@@ -518,273 +507,9 @@ in `statnet` =vertices
 
 **Node attributes**: attributes of the nodes (Optional)
 
-
 **Tie attributes**: attributes of the ties (Optional)
 
 **Metadata**: other information about the entire network
 `statnet` = global information about the network (e.g. directed or not directed, are loops allowed, etc.)
----
-# Things to do with networks
-
-Create or import networks
-
-Examine network characteristics
-
-EXPAND
----
-# Network in R
-
-- `statnet`: collection of packages to work with networks [`statnet`](http://statnet.org/)
-
-[CRAN](https://cran.r-project.org/package=statnet)
-
-- `igraph`:  collection of network analysis tools with the emphasis on efficiency, portability and ease of use - [`igraph`](https://igraph.org/)
-
-[CRAN](https://cran.r-project.org/web/packages/igraph/index.html)
----
-#`igraph` package
-```{r}
-#install.packages("igraph") #install igraph package if you are yet to install it
-library(igraph) #load igraph package
-```
----
-#`igraph` package
-
-- free  
-
-- available for Python, R, C/C++ and Mathematica.
----
-#`igraph` package
-
-Let's do some practice...
-
-IMAGE
 
 ---
-
-```{r eval=FALSE}
-make_graph(
-  edges, #a vector defining the edges, OR character scallar(notable graph - case insensitive!)
-  ...,
-  n = max(edges),
-  isolates = NULL, #for symbolic edge lists
-  directed = TRUE #directed or not
-)
-```
-
----
-#Notable Graphs in `igraph`: 
-
-- `Bull`
-
-The bull graph, 5 vertices, 5 edges, resembles to the head of a bull if drawn properly.
-
-- `Chvatal`
-
-The smallest triangle-free graph that is both 4-chromatic and 4-regular. 
-According to the Grunbaum conjecture there exists an m-regular, m-chromatic graph with n vertices for every m>1 and n>2. The Chvatal graph is an example for m=4 and n=12. It has 24 edges.
----
-#Notable Graphs in `igraph`: 
-
-- `Coxeter`
-
-A non-Hamiltonian cubic symmetric graph with 28 vertices and 42 edges.
-
-` `Cubical`
-
-The Platonic graph of the cube. A convex regular polyhedron with 8 vertices and 12 edges.
-
-- `Diamond`
-
-A graph with 4 vertices and 5 edges, resembles to a schematic diamond if drawn properly.
----
-#Notable Graphs in `igraph`: 
-
-- `Dodecahedral`, `Dodecahedron`
-
-Platonic solid with 20 vertices and 30 edges.
-
-- `Folkman`
-
-The semisymmetric graph with minimum number of vertices, 20 and 40 edges. A semisymmetric graph is regular, edge transitive and not vertex transitive.
-
----
-#Notable Graphs in `igraph`: 
-
-- `Franklin`
-
-This is a graph whose embedding to the Klein bottle can be colored with six colors, it is a counterexample to the neccessity of the Heawood conjecture on a Klein bottle. It has 12 vertices and 18 edges.
-
-- `Frucht`
-
-The Frucht Graph is the smallest cubical graph whose automorphism group consists only of the identity element. It has 12 vertices and 18 edges.
----
-#Notable Graphs in `igraph`: 
-
-- `Grotzsch`
-
-The Groetzsch graph is a triangle-free graph with 11 vertices, 20 edges, and chromatic number 4. It is named after German mathematician Herbert Groetzsch, and its existence demonstrates that the assumption of planarity is necessary in Groetzsch's theorem that every triangle-free planar graph is 3-colorable.
----
-#Notable Graphs in `igraph`: 
-
-- `Heawood`
-
-The Heawood graph is an undirected graph with 14 vertices and 21 edges. The graph is cubic, and all cycles in the graph have six or more edges. Every smaller cubic graph has shorter cycles, so this graph is the 6-cage, the smallest cubic graph of girth 6.
----
-#Notable Graphs in `igraph`: 
-
-- `Herschel`
-The Herschel graph is the smallest nonhamiltonian polyhedral graph. It is the unique such graph on 11 nodes, and has 18 edges.
----
-#Notable Graphs in `igraph`: 
-
--` House`
-The house graph is a 5-vertex, 6-edge graph, the schematic draw of a house if drawn properly, basicly a triangle of the top of a square.
-
----
-#Notable Graphs in `igraph`: 
-
-- `HouseX`
-The same as the house graph with an X in the square. 5 vertices and 8 edges.
-
----
-#Notable Graphs in `igraph`: 
-
-- `Icosahedral`, `Icosahedron`
-
-A Platonic solid with 12 vertices and 30 edges.
-
-- `Krackhardt kite`
-
-A social network with 10 vertices and 18 edges. Krackhardt, D. Assessing the Political Landscape: Structure, Cognition, and Power in Organizations. Admin. Sci. Quart. 35, 342-369, 1990.
----
-#Notable Graphs in `igraph`: 
-
-- `Levi`
-
-The graph is a 4-arc transitive cubic graph, it has 30 vertices and 45 edges.
-
-- `McGee`
-
-The McGee graph is the unique 3-regular 7-cage graph, it has 24 vertices and 36 edges.
----
-#Notable Graphs in `igraph`: 
-
-- `Meredith`
-
-The Meredith graph is a quartic graph on 70 nodes and 140 edges that is a counterexample to the conjecture that every 4-regular 4-connected graph is Hamiltonian.
----
-#Notable Graphs in `igraph`: 
-
-- `Noperfectmatching`
-
-A connected graph with 16 vertices and 27 edges containing no perfect matching. A matching in a graph is a set of pairwise non-adjacent edges; that is, no two edges share a common vertex. A perfect matching is a matching which covers all vertices of the graph.
-
----
-#Notable Graphs in `igraph`: 
-
-- `Nonline`
-
-A graph whose connected components are the 9 graphs whose presence as a vertex-induced subgraph in a graph makes a nonline graph. It has 50 vertices and 72 edges.
----
-#Notable Graphs in `igraph`: 
-
-- `Octahedral`, `Octahedron`
-
-Platonic solid with 6 vertices and 12 edges.
-
-- `Petersen`
-
-A 3-regular graph with 10 vertices and 15 edges. It is the smallest hypohamiltonian graph, ie. it is non-hamiltonian but removing any single vertex from it makes it Hamiltonian.
----
-#Notable Graphs in `igraph`: 
-
-- `Robertson`
-
-The unique (4,5)-cage graph, ie. a 4-regular graph of girth 5. It has 19 vertices and 38 edges.
-
-- `Smallestcyclicgroup`
-
-A smallest nontrivial graph whose automorphism group is cyclic. It has 9 vertices and 15 edges.
----
-#Notable Graphs in `igraph`: 
-
-- `Tetrahedral`, `Tetrahedron`
-
-Platonic solid with 4 vertices and 6 edges.
----
-#Notable Graphs in `igraph`: 
-
-- `Thomassen`
-
-The smallest hypotraceable graph, on 34 vertices and 52 edges. A hypotracable graph does not contain a Hamiltonian path but after removing any single vertex from it the remainder always contains a Hamiltonian path. A graph containing a Hamiltonian path is called tracable.
----
-#Notable Graphs in `igraph`: 
-
-- `Tutte`
-
-Tait's Hamiltonian graph conjecture states that every 3-connected 3-regular planar graph is Hamiltonian. This graph is a counterexample. It has 46 vertices and 69 edges.
-
-- `Uniquely3colorable`
-Returns a 12-vertex, triangle-free graph with chromatic number 3 that is uniquely 3-colorable.
----
-#Notable Graphs in `igraph`: 
-
-- `Walther`
-An identity graph with 25 vertices and 31 edges. An identity graph has a single graph automorphism, the trivial one.
----
-#Notable Graphs in `igraph`: 
-
-- `Zachary`
-Social network of friendships between 34 members of a karate club at a US university in the 1970s. See W. W. Zachary, An information flow model for conflict and fission in small groups, Journal of Anthropological Research 33, 452-473 (1977).
-
----
-
-```{r}
-solids <- list(make_graph("Tetrahedron"),
-               make_graph("Cubical"),
-               make_graph("Octahedron"),
-               make_graph("Dodecahedron"),
-               make_graph("Icosahedron"))
-plot(solids[[2]]) #Cubical graph
-```
----
-
----
-# Importing network data and common network data tasks
-
-
-
----
-##
-
-
-
-
-#Functions for creating graphs
-
-`graph_from_literal`: create small graphs with a given structure
-- R's formula interface, its manual page contains many examples.
-
-- `graph`:  takes numeric vertex ids directly
-
-- `graph.atlas`: create graph from the Graph Atlas
-
-- `make_graph`: create some special graphs.
-
----
-#Functions for creating graphs from field data
-To create graphs from field data, graph_from_edgelist, graph_from_data_frame and graph_from_adjacency_matrix are probably the best choices.
-
-The igraph package includes some classic random graphs like the Erdos-Renyi GNP and GNM graphs (sample_gnp, sample_gnm) and some recent popular models, like preferential attachment (sample_pa) and the small-world model (sample_smallworld).
-
-
-
-
-
----
-Resources:
-
-[`statnet` workshop](https://github.com/statnet/Workshops/wiki)
-
-[Awesome list of resources](https://github.com/briatte/awesome-network-analysis)
