@@ -32,7 +32,7 @@ plot(g1) # simple plot of the network
 Let's do more!
 
 ```{r}
-g2 <- graph( edges=c(1,2, 2,3, 3, 1), n=10, directed=F)
+g2 <- graph(edges=c(1,2, 2,3, 3, 1), n=10, directed=F)
 class(g2)
 g2
 plot(g2) # how does it look like?

@@ -41,6 +41,8 @@ It comes in two versions:
 
 We will be working primarily with `small_trains.csv` for demonstation purposes.
 
+
+
 --------
 
 Let's start by reading the file and creating a network object
@@ -56,9 +58,18 @@ Let's create the **node list**:
 We need to isolate `distinct` stations from both the “departure_station” and “arrival_station” columns and then join the information from these columns together.
 
 ```{r}
+small_trains <- small_trains %>%  
+  group_by(departure_station) %>%
+  mutate(late_depart = mean(num_late_at_departure), 
+            late_arrive=mean(num_arriving_late))%>% 
+  ungroup()
+
 routes_from <- small_trains %>%
-  distinct(departure_station) %>%
+  distinct(departure_station, service) %>%
   rename(label = departure_station)
+
+nodes_attributes<-test %>%
+  select(departure_station, late_depart, late_arrive)
 
 head(routes_from)
 
@@ -78,7 +89,8 @@ head(nodes)
 Let's give unique IDs for each station
 
 ```{r}
-nodes <- nodes %>% rowid_to_column("id")
+nodes <- nodes %>% 
+  rowid_to_column("id")
 head(nodes)
 ```
 
@@ -87,7 +99,8 @@ Let's create the **edge list**:
 ```{r}
 per_route <- small_trains %>%  
   group_by(departure_station, arrival_station) %>%
-  summarise(weight = mean(total_num_trips)) %>% 
+  summarise(num_trips = mean(total_num_trips), 
+            journey_time_avg=mean(journey_time_avg))%>% 
   ungroup()
 
 head(per_route)
@@ -109,11 +122,11 @@ head(edges)
 ```
 Let's reorder the columns so that the dataset starts with “from” and “to” (IDs). We also do not need “departure_station” and “arrival_station” columns with the names of the stations.
 
-Let's use `select() function` to include the “from”, “to”, and “weight” columns.
+Let's use `select() function` to include the “from”, “to”, and “num_trips",  "journey_time_avg” columns.
 
 ```{r}
 edges <- edges%>%
-  select(from, to, weight)
+  select(from, to, num_trips,  journey_time_avg)
 
 head(edges)
 ```
@@ -123,8 +136,11 @@ Create network object
 ```{r}
 routes_graph <- graph_from_data_frame(d=edges, vertices=nodes, directed=T)
 
+#write_graph(routes_graph, "routes_graph.graphml", format="graphml")
 
 #routes_network <- network(edges, vertex.attr = nodes, matrix.type = "edgelist", ignore.eval = FALSE)
+
+#routes_network<-read_graph("routes_graph.graphml", format="graphml")
 
 ```
 
@@ -157,7 +173,6 @@ E(routes_graph)$weight # Edge attribute "weight"
 V(routes_graph)$name # Vertex attribute "name"
 ```
 
-
 ###Basic visualization of network
 
 Now that we have our `igraph network object`, let’s plot it.
@@ -170,15 +185,15 @@ That doesn’t look very good and needs further work...
 We can extract an edge list or a matrix from igraph networks.
 
 ```{r}
-as_edgelist(routes_graph, names=T)
-as_adjacency_matrix(routes_graph, attr="weight")
+as_edgelist(routes_graph, names=T)  %>% head()
+as_adjacency_matrix(routes_graph, attr="weight")  %>% head()
 ```
 
 Or data frames describing nodes and edges:
 
 ```{r}
-as_data_frame(routes_graph, what="edges")
-as_data_frame(routes_graph, what="vertices")
+as_data_frame(routes_graph, what="edges")   %>% head()
+as_data_frame(routes_graph, what="vertices")   %>% head()
 ```
 
 But back to plotting with igraph
@@ -193,42 +208,52 @@ A list of selected options is included below, but you can also see them if you u
 
 **NODES**
 
-vertex.color Node color
-vertex.frame.color Node border color
-vertex.shape One of “none”, “circle”, “square”, “csquare”, “rectangle”
-“crectangle”, “vrectangle”, “pie”, “raster”, or “sphere”
-vertex.size Size of the node (default is 15)
-vertex.size2 The second size of the node (e.g. for a rectangle)
-vertex.label Character vector used to label the nodes
-vertex.label.family Font family of the label (e.g.“Times”, “Helvetica”)
-vertex.label.font Font: 1 plain, 2 bold, 3, italic, 4 bold italic, 5 symbol
-vertex.label.cex Font size (multiplication factor, device-dependent)
-vertex.label.dist Distance between the label and the vertex
-vertex.label.degree The position of the label in relation to the vertex,
-where 0 right, “pi” is left, “pi/2” is below, and “-pi/2” is above
+Option | Use
+---|---
+vertex.color | Node color
+vertex.frame.color | Node border color
+vertex.shape  | One of “none”, “circle”, “square”, “csquare”, “rectangle”, “crectangle”, “vrectangle”, “pie”, “raster”, or “sphere”
+vertex.size | Size of the node (default is 15)
+vertex.size2 | The second size of the node (e.g. for a rectangle)
+vertex.label | Character vector used to label the nodes
+vertex.label.family | Font family of the label (e.g.“Times”, “Helvetica”)
+vertex.label.font | Font: 1 plain, 2 bold, 3, italic, 4 bold italic, 5 symbol
+vertex.label.cex | Font size (multiplication factor, device-dependent)
+vertex.label.dist | Distance between the label and the vertex
+vertex.label.degree | The position of the label in relation to the vertex, where 0 right, “pi” is left, “pi/2” is below, and “-pi/2” is above
+
+-----------
 
 **EDGES**
 
-edge.color Edge color
-edge.width Edge width, defaults to 1
-edge.arrow.size Arrow size, defaults to 1
-edge.arrow.width Arrow width, defaults to 1
-edge.lty Line type, could be 0 or “blank”, 1 or “solid”, 2 or “dashed”,
-3 or “dotted”, 4 or “dotdash”, 5 or “longdash”, 6 or “twodash”
-edge.label Character vector used to label edges
-edge.label.family Font family of the label (e.g.“Times”, “Helvetica”)
-edge.label.font Font: 1 plain, 2 bold, 3, italic, 4 bold italic, 5 symbol
-edge.label.cex Font size for edge labels
-edge.curved Edge curvature, range 0-1 (FALSE sets it to 0, TRUE to 0.5)
-arrow.mode Vector specifying whether edges should have arrows,
-possible values: 0 no arrow, 1 back, 2 forward, 3 both
+------------
+
+Option | Use
+---|---
+edge.color | Edge color
+edge.width | Edge width, defaults to 1
+edge.arrow.size | Arrow size, defaults to 1
+edge.arrow.width | Arrow width, defaults to 1
+edge.lty | Line type, could be 0 or “blank”, 1 or “solid”, 2 or “dashed”, 3 or “dotted”, 4 or “dotdash”, 5 or “longdash”, 6 or “twodash”
+edge.label | Character vector used to label edges
+edge.label.family | Font family of the label (e.g.“Times”, “Helvetica”)
+edge.label.font | Font: 1 plain, 2 bold, 3, italic, 4 bold italic, 5 symbol
+edge.label.cex | Font size for edge labels
+edge.curved | Edge curvature, range 0-1 (FALSE sets it to 0, TRUE to 0.5)
+arrow.mode | Vector specifying whether edges should have arrows, possible values: 0 no arrow, 1 back, 2 forward, 3 both
+
+-----
 
 **OTHER**
 
-margin Empty space margins around the plot, vector with length 4
-frame if TRUE, the plot will be framed
-main If set, adds a title to the plot
-sub If set, adds a subtitle to the plot
+-----
+
+Option | Use
+---|---
+margin | Empty space margins around the plot, vector with length 4 frame if TRUE, the plot will be framed
+main | If set, adds a title to the plot
+sub | If set, adds a subtitle to the plot
+
 
 Let's start changing the plot:
 
@@ -281,7 +306,7 @@ col="#777777", pt.bg=colrs, pt.cex=2, cex=.8, bty="n", ncol=1)
 For semantic networks, we may plot only the labels of the nodes:
 
 ```{r}
-plot(routes_graph, vertex.shape="none", vertex.label=V(net)$name,
+plot(routes_graph, vertex.shape="none", vertex.label=V(routes_graph)$name,
 vertex.label.font=2, vertex.label.color="gray40",
 vertex.label.cex=.7, edge.color="gray85")
 ```
@@ -372,7 +397,7 @@ reciprocity(routes_graph)
 
 - **local** - ratio of triangles to connected triples *each vertex is part of*. This is calculated for each vertex given in the `vids` argument of  `transitivity()`.
 
-```{r}
+```{r eval=FALSE}
 transitivity(routes_graph, type="global") # routes_graph is treated as an undirected network
 transitivity(routes_graph, mode="local") # same as above
 ```

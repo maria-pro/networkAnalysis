@@ -1,5 +1,5 @@
 ---
-title: "ggraph"
+title: "ggraph and visualization"
 author: "Maria Prokofieva"
 date: "17/02/2021"
 output: html_document
@@ -15,10 +15,11 @@ knitr::opts_chunk$set(echo = TRUE,
 
 ```{r}
 
-#install.packages(c("igraph","graphlayouts","ggraph","ggplot2"))
-#ggplot2 is part of tidyverse package,
+#install.packages(c("igraph","graphlayouts","ggraph","tidyverse", "statnet"))
+#ggplot2 is part of tidyverse package
 
 library(igraph)
+library(statnet)
 library(ggraph)
 library(graphlayouts)
 library(tidygraph)
@@ -33,7 +34,175 @@ While `igraph` and `statnet` packages are "classic" for working with networks, r
 
 - `tidygraph` provides a way for `dplyr` to interact with graphs
 
-let's start with `ggraph`....
+let's start with `ggraph`, but before let's dig further into visualization.
+
+## Effective network graphic design
+
+What makes networkgraph layouts easier to understand and interpret?
+
+- Minimize edge crossings.
+
+- Maximize the symmetry of the layout of nodes.
+
+- Minimize the variability of the edge lengths.
+
+- Maximize the angle between edges when they cross or join nodes.
+
+- Minimize the total space used for the network display
+
+**Force-directed approach**: a flexible and powerful approach to automatic network layouts.
+It iteratively minimize the total energy in a network:
+
+- connect nodes to have a spring-like attractive force, while simultaneously assigning repulsive forces to all pairs of nodes. 
+
+- The springs pull connected nodes closer to one another, but the repulsive forces push unconnected nodes away from each other. 
+
+Let's have a look at this example using `gplot()` function (with the same `family data set from `network` package, `flo`)
+
+```{r}
+
+#data(flo)
+#family<-network(flo, directed=FALSE)
+gplot(family, gmode="graph", mode="random", vertex.cex=1.5, main="Random layout")
+
+gplot(family, gmode="graph",mode="fruchtermanreingold", vertex.cex=1.5, main="Fruchterman-Reingold")
+```
+
+For network visualization `statnet` uses two closely related functions, `plot()` and `gplot()` (<-has more layout options)
+
+```{r}
+gplot(family, gmode="graph", edge.col="grey75", vertex.cex=1.5, mode='circle', main="circle")
+
+gplot(family, gmode="graph",edge.col="grey75", vertex.cex=1.5, mode='eigen', main="eigen")
+
+gplot(family, gmode="graph", edge.col="grey75", vertex.cex=1.5, mode='random', main="random")
+
+gplot(family, gmode="graph", edge.col="grey75", vertex.cex=1.5,mode='spring',main="spring")
+
+gplot(family, gmode="graph",edge.col="grey75", vertex.cex=1.5,mode='fruchtermanreingold', main='fruchtermanreingold')
+
+gplot(family,gmode="graph",edge.col="grey75", vertex.cex=1.5,mode='kamadakawai',
+main='kamadakawai')
+```
+
+Some options to be used there include:
+
+- `vertex.col`: color for vertices; may be given as a vector, if vertices are to be of different colors. By default, red is used (or red and blue, for two-mode data).
+
+- `vertex.cex`:	expansion factor for vertices; may be given as a vector, if vertices are to be of different sizes.
+
+- `label.cex`: character expansion factor for label text.
+
+- `label.col`: color for vertex labels; may be given as a vector, if labels are to be of different colors
+
+- `edge.col`: color for edges; may be given as a vector or adjacency matrix, if edges are to be of different colors.
+
+-`mode`: the vertex placement algorithm which works with `gplot.layout` function.`
+
+Vertex layouts for network visualization is a difficult problem:
+
+- no single, “good” layout algorithm, and 
+
+- many different approaches may be valuable under different circumstances. 
+
+`gplot` allows for the use of arbitrary vertex layout algorithms 
+
+The layout currently supplied by default include:
+
+- `circle`: This function places vertices uniformly in a circle; it takes no arguments.
+
+- `eigen`: This function places vertices based on the eigenstructure of the adjacency matrix. 
+
+- `fruchtermanreingold`: a layout using a variant of Fruchterman and Reingold's force-directed placement algorithm
+
+- `kamadakawai`: a vertex layout using a version of the Kamada-Kawai force-directed placement algorithm
+
+The goal for any network graphic design should be to 
+
+------
+
+- **produce a figure that reveals the important or interesting information that is contained in the network data.**
+
+----
+
+To do this consider every graphical element that can appear in the figure:
+
+#### Node Color
+
+```{r}
+gplot(family,vertex.col="slateblue2",gmode="graph", displaylabels=TRUE)
+
+
+```
+`vertex.col="slateblue2"` specifies the colour for nodes.
+
+A color are speified by their color names.
+
+Use the `colors()` command to see all of the 657 possible color names recognized by R, 
+
+```{r}
+colors() %>% head (20)
+```
+
+Colors can also be selected using Red-Green-Blue (RGB) triplets of intensities. You also can usea hexadecimal string of the form ‘#RRGGBB’, where each of the RR, GG, and BB parts of the string is a hexadecimal number that provides the red, green or blue intensity ranging from 00 to FF. You can see a great colour picker [here](https://www.w3schools.com/colors/colors_picker.asp)
+
+Normally, colors are fully opaque, which may be a problem for large networks with overlapping nodes (large color ‘blobs’).
+
+Use `rgb()` function to set transparency, from 0 (fully transparent) to 1 (fully opaque). See `?rgb` for more details.
+
+We are going to use our `routes_graph` to demonstrate this.  But first we need to convert it to `network` object from `igraph`. `integraph` package [here]()
+
+```{r}
+#install.packages("intergraph")
+library(intergraph)
+
+#let's do the conversion from igraph to network
+
+class(routes_graph)
+routes_graph_network<-asNetwork(routes_graph)
+class(routes_graph_network)
+summary(routes_graph_network)
+
+gplot(routes_graph_network,
+      gmode="graph",
+      vertex.cex=2, 
+      vertex.col=rgb(0,0,139,maxColorValue=255), 
+      edge.col="grey80",
+      edge.lwd=0.5,
+      main="Fully opaque")
+
+gplot(routes_graph_network,
+      gmode="graph",
+      vertex.cex=2,
+      vertex.col=rgb(0,0,139, alpha=80, maxColorValue=255),
+      edge.col="grey80",
+      edge.lwd=0.5,
+      main="Partly transparent")
+```
+Communicate some characteristic of the node or network by having different nodes have different colors.
+
+```{r}
+plot(routes_graph_network,usearrows=FALSE,vertex.cex=1.5,label=rolelab,
+displaylabels=T,vertex.col="role")
+```
+
+#### Node Shape
+
+
+#### Node Size
+
+#### Node Label
+
+#### Edge Width
+
+#### Edge Color
+
+#### Edge Type
+
+
+#### Legends
+
+
 
 ### `ggraph` 
 
