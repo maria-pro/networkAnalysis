@@ -269,7 +269,7 @@ plot(routes_graph, edge.arrow.size=.4, edge.curved=.1, vertex.label=NA)
 # Replace the vertex label with the node names stored in "media"
 plot(routes_graph, edge.arrow.size=.2, edge.curved=0,
 vertex.color="orange", vertex.frame.color="#555555",
-vertex.label=V(routes_graph)$name, vertex.label.color="black",
+vertex.label=V(routes_graph)$label, vertex.label.color="black",
 vertex.label.cex=.5)
 ```
 The alternative way is to add attributes to the igraph object. 
