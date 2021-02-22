@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Practical Applications of Network Science: Workshop 2</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Dr Maria Prokofieva" />
+    <meta name="date" content="2021-01-01" />
+    <script src="libs/header-attrs/header-attrs.js"></script>
+    <link href="libs/remark-css/shinobi.css" rel="stylesheet" />
+    <link href="libs/remark-css/ninjutsu.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Practical Applications of Network Science: Workshop 2
+## ⚔<br/>with xaringan
+### Dr Maria Prokofieva
+### VU Business School
+### 2021
+
+---
+
+
+background-image: ![]("img/bg.jpg")
+
+
+
+???
+
+Image credit: [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Sharingan_triple.svg)
+
+---
+
+# Visualization and wrangling:`ggraph` and `tidygraph`
+
+[`ggraph`](https://cran.r-project.org/web/packages/ggraph/)
+
+[`tidygraph`](https://cran.r-project.org/web/packages/tidygraph/) 
+
+
+```r
+#install.packages("igraph","statnet", "ggraph", "tidygraph")
+
+#load libraries
+library(ggraph)
+library(tidygraph)
+```
+
+---
+#Tidy data workflow - R
+
+![](img/tidy.png)
+---
+# `ggraph` and `tidygraph`
+
+![](img/ggraph_tidygraph.png)
+
+---
+#Short case:
+
+
+```r
+# Load Packages 
+library(ggraph)
+library(igraph) 
+library(tidyverse)
+```
+
+Dataset: [Kaggle dataset](https://www.kaggle.com/prashant111/the-simpsons-dataset?select=simpsons_script_lines.csv)
+
+---
+#Data Preparation
+
+
+```r
+# Load scripts and remove non-speaking lines
+lines &lt;- read_csv("simpsons_script_lines.csv")
+
+speaking_lines &lt;- lines %&gt;% 
+  filter(!is.na(raw_character_text))
+
+# Limit analysis to re-occuring characters in 20 or more episodes
+top_char &lt;- speaking_lines %&gt;% 
+  group_by(raw_character_text) %&gt;% 
+  mutate(appearances=n_distinct(episode_id)) %&gt;% 
+  filter(appearances &gt;= 20) %&gt;%
+  ungroup()
+
+# Count characters lines per episode 
+lines_per_ep &lt;- top_char %&gt;% 
+  group_by(raw_character_text, episode_id) %&gt;% 
+  summarise(lines=n()) %&gt;% 
+  ungroup()
+
+#write_csv(lines_per_ep, "lines_per_ep.csv")
+#load the prepared dataset
+#lines_per_ep &lt;-read_csv("https://raw.github.com/maria-pro/dataset//main/lines_per_ep.csv")
+```
+---
+# Adjacency matrix
+
+Let's convert the dataset into a weighted N∗N adjacency matrix of character connections. 
+
+Count characters’ lines per episode, then use cosine similarity to weigh connections based on episodes appearances and amount of dialogue.
+
+
+
+
+```r
+# Convert to matrix
+char_df &lt;- lines_per_ep %&gt;% 
+  spread(episode_id, lines, fill=0)
+
+char_mat &lt;- as.matrix(select(char_df, -raw_character_text))
+rownames(char_mat) &lt;- char_df$raw_character_text
+
+# Calculate cosine distance between characters
+cosine_sim &lt;- as.dist(char_mat %*% t(char_mat) / (sqrt(rowSums(char_mat^2) %*% t(rowSums(char_mat^2)))))
+```
+---
+
+# Initial look at the network 
+
+```r
+autograph(as.matrix(cosine_sim))
+```
+
+&lt;img src="slides2_files/figure-html/unnamed-chunk-5-1.png" style="display: block; margin: auto;" /&gt;
+---
+# igraph network
+
+Remove weaker connections from the adjacency matrix and introduce igraph functions for layout and community detection.
+
+Let's use the Louvain Method to create small clusters optimising locally, then iteratively build a network using smaller clusters as nodes.
+
+
+```r
+# Filter weak connections. The amount chosen here is arbitrary. Try different variations. 
+cs_strong &lt;- cosine_sim
+cs_strong[cs_strong &lt; max(cs_strong) * 0.25] &lt;- 0 
+
+# Create an igraph object 
+ig &lt;- as.matrix(cs_strong) %&gt;% 
+  graph_from_adjacency_matrix(mode = "undirected", weighted = TRUE)
+
+# Community detection algoritm 
+community &lt;- cluster_louvain(ig) 
+
+# Attach communities to relevant vertices
+V(ig)$color &lt;- community$membership 
+```
+
+---
+#Plotting
+
+
+```r
+# Graph layout
+layout &lt;- layout.random(ig) 
+
+# igraph plot 
+plot(ig, layout = layout)
+```
+
+&lt;img src="slides2_files/figure-html/unnamed-chunk-7-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+#`ggraph`
+
+Let's customise further!
+
+`ggraph` allows adjustments to be added layer by layer. 
+
+Layers to control network attributes include:
+
+`geom_edge_link()`: Straight line edge connections between nodes
+`geom_node_point()`: Vertex markers
+`geom_node_text()`: Vertex labels
+
+Finally, add theme or labels carry over from `ggplot2`
+---
+#`ggraph`
+
+
+```r
+# Plot with same aesthetic adjustments as previous
+ggraph(ig, layout = "fr") +
+  geom_edge_link() + 
+  geom_node_point(aes(color = factor(color))) + 
+  geom_node_text(aes(label = name), repel = TRUE) +
+  theme_void() +
+  theme(legend.position = "none") 
+```
+
+&lt;img src="slides2_files/figure-html/unnamed-chunk-8-1.png" style="display: block; margin: auto;" /&gt;
+---
+# Adjusting aesthetics and layout
+
+Replace `geom_edge_link()` with `geom_edge_fan()` to avoid overlapping and reduce the boldness of edges.
+
+For the vertices: Use `aes()` to link size and text with degree centrality. 
+
+Use the `degree()` function to calculate the importance of vertices by their number of connections.
+
+Use layout = "fr" to use Fruchterman-Reingold, one of the most widely used algorithms. It is a force-directed method which attempts to avoid edges crossing or differing significantly in length.
+
+---
+
+
+```r
+# Set size to degree centrality 
+V(ig)$size = degree(ig)
+
+# Additional customisation for better legibility 
+ggraph(ig, layout = "fr") +
+  geom_edge_arc(strength = 0.2, width = 0.5, alpha = 0.15) + 
+  geom_node_point(aes(size = size, color = factor(color))) + 
+  geom_node_text(aes(label = name, size = size), repel = TRUE) +
+  theme_void() +
+  theme(legend.position = "none") 
+```
+
+&lt;img src="slides2_files/figure-html/unnamed-chunk-9-1.png" style="display: block; margin: auto;" /&gt;
+---
+# Layout options
+
+No best layout as different algorithms have their strengths and purposes!
+
+
+```r
+#install.packages("gridExtra")
+library(gridExtra)
+
+# Test different layouts 
+g1 &lt;- ggraph(ig, layout = "mds") +
+  geom_edge_arc(strength=0.2, width=0.5, alpha=.15) + 
+  geom_node_point(aes(size=size, color=factor(color))) + 
+  theme_void() +
+  theme(legend.position = "none") + 
+  labs(title = "Multi-Dimensional Scaling")
+```
+
+---
+
+
+```r
+g2 &lt;- ggraph(ig, layout = "kk") +
+  geom_edge_arc(strength=0.2, width=0.5, alpha=.15) + 
+  geom_node_point(aes(size=size, color=factor(color))) + 
+  theme_void() +
+  theme(legend.position = "none") + 
+  labs(title = "Kamada-Kawai")
+```
+---
+
+
+
+```r
+g3 &lt;- ggraph(ig, layout = "lgl") +
+  geom_edge_arc(strength=0.2, width=0.5, alpha=.15) + 
+  geom_node_point(aes(size=size, color=factor(color))) + 
+  theme_void() +
+  theme(legend.position = "none") + 
+  labs(title = "Large Graph Layout") 
+```
+---
+
+```r
+g4 &lt;- ggraph(ig, layout = "graphopt") +
+  geom_edge_arc(strength=0.2, width=0.5, alpha=.15) + 
+  geom_node_point(aes(size=size, color=factor(color))) + 
+  theme_void() +
+  theme(legend.position = "none") + 
+  labs(title = "GraphOPT")
+```
+---
+#Filtering
+
+Let's do filtering within the `aesthetic` mapping to highlight areas of interest:
+
+- chart filters vertex size to remove color and labels from less important characters
+
+- shows how the colors can be set directly
+
+---
+
+
+
+```r
+# Filter example
+cs_weak &lt;- cosine_sim
+cs_weak[cs_weak &lt; max(cs_weak) * 0.1] &lt;- 0 
+
+ig2 &lt;- graph.adjacency(as.matrix(cs_weak), weighted = TRUE, mode = "undirected")
+V(ig2)$size &lt;- degree(ig2) 
+
+community2 &lt;- cluster_louvain(ig2)
+V(ig2)$color &lt;- community2$membership
+
+g5 &lt;- ggraph(ig2, layout = "graphopt") +
+  geom_edge_link(alpha = 0.15) + 
+  geom_node_point(aes(filter = size &lt;= 50, size = size, alpha = 0.5)) + 
+  geom_node_point(aes(filter = size &gt; 50, size = size, color = factor(color))) + 
+  geom_node_text(aes(filter = size &gt; 50, label = name, size = size), repel = TRUE) +
+  theme_void() +
+  theme(legend.position = "none") +
+  labs(title = "Degree Centrality")
+```
+---
+
+
+```r
+# Change colors for Simpsons Family 
+ig_simp &lt;- ig 
+V(ig_simp)$color &lt;- "grey20"
+V(ig_simp)$color[grepl("Simpson", V(ig_simp)$name)] &lt;- "gold"
+
+g6 &lt;- ggraph(ig_simp, layout = "fr") +
+  geom_edge_link(alpha = 0.15) + 
+  geom_node_point(aes(size = size), color = V(ig_simp)$color) + 
+  geom_node_text(aes(filter = grepl("Simpson", name), size = size, label = name), repel=TRUE) +
+  theme_void() +
+  theme(legend.position = "none") + 
+  labs(title = "Simpson Family")
+```
+---
+# Graph measures
+
+**Size**: the number of members (e.g nodes, vertices or actors)
+
+Some books may refer to the number of nodes, while the number of edges is less common.
+
+**Density**: proportion of observed ties in a network to the maximum number of possible ties (a range from 0 to 1).
+
+- more interconnected networks have density closer to 1.
+
+**Diameter**: The maximum of the shortest distances between all node-pairs in the graph.
+
+---
+
+# Node Measure 
+
+**Centrality**: "Which node is the most important one in the network?" 
+
+- a function that assigns a numerical value to each vertex of a network according to its influence on the others. 
+
+- the importance of a node is determined by its position within a network. 
+
+- the meaning depends on the type of the network (e.g effective person in a social network or key train station in the urban networks).
+
+---
+
+# Node Measure 
+
+**Degree Centrality**: Number of edges that a node has 
+= the number of links incident upon a node.
+
+**Eigencentrality** is a measure of the importance of a node in a network. 
+
+- assigns relative scores to all nodes in the network that connections to high-scoring nodes contribute more to the score of the node in question than equal connections to low-scoring nodes.
+
+Node high on eigenvector centrality is essentially connected to many high degree nodes.
+---
+
+# Node Measure
+
+![](img/centrality.png)
+
+---
+
+# Node Measure
+
+**Closeness Centrality**: the average length of the shortest path between the node and all other nodes in the graph.
+
+The more central a node is, the closer it is to all other nodes.
+
+**Betweenness Centrality**: the number of times a node acts as a bridge along the shortest path between two other nodes.
+
+Different types of centrality measures to determine the most influential nodes of a network
+
+BUT
+
+no consensus on how to select and implement the best tailored measure for a given network.
+
+More than 140 benchmarks currently available to identify the central vertices, but which one should be used to calculate the influential nodes?
+---
+# CINNA (Central Informative Nodes in Network Analysis) 
+
+an R package for computing, analyzing and comparing centrality measures submitted to CRAN repository.
+
+
+
+
+
+```r
+#install.packages("CINNA")
+library(CINNA)
+data("zachary")
+
+plot(zachary)
+```
+
+&lt;img src="slides2_files/figure-html/unnamed-chunk-16-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+# CINNA (Central Informative Nodes in Network Analysis) 
+
+calculate centrality types based on the graph structure with the `proper_centralities()` 
+
+- a list with 43 popular centrality names specific for an undirected-unweighted structure. 
+
+
+```r
+pr_cent&lt;-proper_centralities(zachary)
+```
+
+```
+##  [1] "subgraph centrality scores"                      
+##  [2] "Topological Coefficient"                         
+##  [3] "Average Distance"                                
+##  [4] "Barycenter Centrality"                           
+##  [5] "BottleNeck Centrality"                           
+##  [6] "Centroid value"                                  
+##  [7] "Closeness Centrality (Freeman)"                  
+##  [8] "ClusterRank"                                     
+##  [9] "Decay Centrality"                                
+## [10] "Degree Centrality"                               
+## [11] "Diffusion Degree"                                
+## [12] "DMNC - Density of Maximum Neighborhood Component"
+## [13] "Eccentricity Centrality"                         
+## [14] "Harary Centrality"                               
+## [15] "eigenvector centralities"                        
+## [16] "K-core Decomposition"                            
+## [17] "Geodesic K-Path Centrality"                      
+## [18] "Katz Centrality (Katz Status Index)"             
+## [19] "Kleinberg's authority centrality scores"         
+## [20] "Kleinberg's hub centrality scores"               
+## [21] "clustering coefficient"                          
+## [22] "Lin Centrality"                                  
+## [23] "Lobby Index (Centrality)"                        
+## [24] "Markov Centrality"                               
+## [25] "Radiality Centrality"                            
+## [26] "Shortest-Paths Betweenness Centrality"           
+## [27] "Current-Flow Closeness Centrality"               
+## [28] "Closeness centrality (Latora)"                   
+## [29] "Communicability Betweenness Centrality"          
+## [30] "Community Centrality"                            
+## [31] "Cross-Clique Connectivity"                       
+## [32] "Entropy Centrality"                              
+## [33] "EPC - Edge Percolated Component"                 
+## [34] "Laplacian Centrality"                            
+## [35] "Leverage Centrality"                             
+## [36] "MNC - Maximum Neighborhood Component"            
+## [37] "Hubbell Index"                                   
+## [38] "Semi Local Centrality"                           
+## [39] "Closeness Vitality"                              
+## [40] "Residual Closeness Centrality"                   
+## [41] "Stress Centrality"                               
+## [42] "Load Centrality"                                 
+## [43] "Flow Betweenness Centrality"                     
+## [44] "Information Centrality"                          
+## [45] "Dangalchev Closeness Centrality"                 
+## [46] "Group Centrality"                                
+## [47] "Harmonic Centrality"                             
+## [48] "Local Bridging Centrality"                       
+## [49] "Wiener Index Centrality"
+```
+E.g. choose the first five centrality measures on the list and use them in `calculate_centralities()` function
+
+- use the Principal Component Analysis (PCA) algorithm to distinguish the most informative centrality measure: each centrality measure as a variable
+
+** PCA is a dimensional reduction technique respectively for linear analysis.
+
+Centralities which are correlated with the principal components are the most important in identifying the central nodes. 
+
+Use the contribution criterion from the PCA shows how variables contribute to the principal components.
+---
+
+# CINNA (Central Informative Nodes in Network Analysis) 
+
+To detect which centralities have more information about the central nodes -&gt; which one can describe influential vertices of a network more accurately.
+
+
+```r
+calculate_centralities(zachary, include = pr_cent[1:5])%&gt;%
+  pca_centralities(scale.unit = TRUE)
+```
+
+&lt;img src="slides2_files/figure-html/unnamed-chunk-18-1.png" style="display: block; margin: auto;" /&gt;
+
+*Barycenter Centrality* has the most contribution value among the five centrality indices.
+---
+
+# CINNA (Central Informative Nodes in Network Analysis) 
+
+A representation of the graph in which each nodes size indicates its corresponding centrality value, would be like below.
+
+
+```r
+visualize_graph( zachary , centrality.type="Barycenter Centrality")
+```
+
+&lt;img src="slides2_files/figure-html/unnamed-chunk-19-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+# Network Measure
+
+**Subgraphs**: Subset of nodes in a network, along with all of the edges linking these nodes.
+
+**Components**: A subgraph of the network that is disconnected from each other.
+
+![](img/components.png)
+
+---
+# Network Measure
+
+**Homophily**: the tendency of nodes to connect to others who are similar on some variable.
+
+**Community detection**: a number of algorithms to detect groups that consist of densely connected nodes with fewer connections across groups.
+
+Community detection based on **edge betweenness (Newman-Girvan)**: high-betweenness edges are removed sequentially (recalculating at each step) and the best partitioning of the network is selected.
+
+---
+# `tidygraph` package
+
+- provides a tidy framework to easily manipulate different types of relational data, including: graph, network and trees.
+
+Network data are considered as two tidy data tables:
+
+- data table 1: *node data* and 
+
+- - data table 2: *edge data*. 
+
+The package provides a simple solution to switch between the two tables and provides `dplyr` verbs for manipulating them.
+
+---
+#Create network objects
+
+
+```r
+library(tidyverse)
+library(tidygraph)
+library(ggraph)
+
+#devtools::install_github("kassambara/navdata")
+library(navdata)
+```
+
+`tbl_graph()`: Creates a network object from nodes and edges data
+
+`as_tbl_graph()`: Converts network data and objects to a tbl_graph network.
+
+Dataset: phone.call2 data (`navdata` package) include a list with the nodes and the edges list.
+
+---
+#Create network objects
+
+Create a tbl_graph network object using the phone call data:
+
+
+```r
+data("phone.call2")
+phone.net &lt;- tbl_graph(
+  nodes = phone.call2$nodes, 
+  edges = phone.call2$edges,
+  directed = TRUE
+  )
+```
+  
+---
+#Create network objects
+
+
+```r
+ggraph(phone.net, layout = "graphopt") + 
+  geom_edge_link(width = 1, colour = "lightgray") +
+  geom_node_point(size = 4, colour = "#00AFBB") +
+  geom_node_text(aes(label = label), repel = TRUE)+
+  theme_graph()
+```
+
+&lt;img src="slides2_files/figure-html/unnamed-chunk-22-1.png" style="display: block; margin: auto;" /&gt;
+---
+# Short example with `mtcars`
+
+- Use the `mtcars` dataset
+
+- Compute the correlation matrix: `correlate()`
+
+- Convert the upper triangle to NA: `shave()`
+
+- Stretch the correlation data frame into long format
+
+- Keep only high correlation
+
+
+```r
+#install.packages(""corrr")
+library(corrr)
+res.cor &lt;- mtcars [, c(1, 3:6)] %&gt;%  # (1)
+  t() %&gt;% correlate() %&gt;%            # (2)
+  shave(upper = TRUE) %&gt;%            # (3)
+  stretch(na.rm = TRUE) %&gt;%          # (4)
+  filter(r &gt;= 0.998)                 # (5)
+# res.cor
+```
+---
+
+#Create the correlation network graph:
+
+
+```r
+set.seed(1)
+cor.graph &lt;- as_tbl_graph(res.cor, directed = FALSE)
+ggraph(cor.graph) + 
+  geom_edge_link() + 
+  geom_node_point() +
+  geom_node_text(
+    aes(label = name), size = 3, repel = TRUE
+    ) +
+  theme_graph()
+```
+
+&lt;img src="slides2_files/figure-html/unnamed-chunk-24-1.png" style="display: block; margin: auto;" /&gt;
+---
+# Print out a network object
+
+
+```r
+cor.graph
+```
+
+```
+## # A tbl_graph: 24 nodes and 59 edges
+## #
+## # An undirected simple graph with 3 components
+## #
+## # Node Data: 24 x 1 (active)
+##   name             
+##   &lt;chr&gt;            
+## 1 Mazda RX4        
+## 2 Mazda RX4 Wag    
+## 3 Datsun 710       
+## 4 Hornet 4 Drive   
+## 5 Hornet Sportabout
+## 6 Valiant          
+## # … with 18 more rows
+## #
+## # Edge Data: 59 x 3
+##    from    to     r
+##   &lt;int&gt; &lt;int&gt; &lt;dbl&gt;
+## 1     1     2 1.00 
+## 2     1    20 1.00 
+## 3     1     8 0.999
+## # … with 56 more rows
+```
+---
+#Active tibble
+
+The notion of an `active tibble` within a `tbl_graph` object makes it possible to manipulate the data in one tibble at a time. 
+
+The `nodes` tibble is activated by default, but you can change which tibble is active with the `activate()` function.
+
+E.g. to rearrange the rows in the `edges` tibble to list those with the highest “r” first,  use `activate()` and then `arrange()`.
+
+
+```r
+cor.graph %&gt;% 
+  activate(edges) %&gt;% 
+  arrange(desc(r))
+```
+
+```
+## # A tbl_graph: 24 nodes and 59 edges
+## #
+## # An undirected simple graph with 3 components
+## #
+## # Edge Data: 59 x 3 (active)
+##    from    to     r
+##   &lt;int&gt; &lt;int&gt; &lt;dbl&gt;
+## 1     1     2  1.00
+## 2    10    11  1.00
+## 3    10    12  1.00
+## 4    11    12  1.00
+## 5     8     9  1.00
+## 6     5    18  1.00
+## # … with 53 more rows
+## #
+## # Node Data: 24 x 1
+##   name         
+##   &lt;chr&gt;        
+## 1 Mazda RX4    
+## 2 Mazda RX4 Wag
+## 3 Datsun 710   
+## # … with 21 more rows
+```
+
+---
+# Network graph manipulation
+
+`as_tibble(cor.graph)` converts the object back to tibble
+
+`tidygraph` package allows to manipulate the nodes and the edges data in the network graph object using `dplyr` verbs: filter/arrange, add/rename columns, etc.
+
+Let's modify the nodes data and edges data.
+
+---
+# Modifying nodes data
+
+- Group the cars by the “cyl” variable (number of cylinders) in the original mtcars data set. 
+
+- Join the group info to the nodes data
+
+- Rename the column “name”, in the nodes data, to “label”
+
+
+```r
+# Car groups info
+cars.group &lt;- data_frame(
+  name = rownames(mtcars),
+  cyl = as.factor(mtcars$cyl)
+)
+
+# Modify the nodes data
+cor.graph &lt;- cor.graph %&gt;%
+  activate(nodes) %&gt;%
+  left_join(cars.group, by = "name") %&gt;%
+  rename(label = name)
+```
+---
+# Modifying the edge data. 
+
+Rename the column “r” to “weight”.
+
+
+```r
+cor.graph &lt;- cor.graph %&gt;%
+  activate(edges) %&gt;%
+  rename(weight = r)
+```
+
+---
+
+
+```r
+cor.graph
+```
+
+```
+## # A tbl_graph: 24 nodes and 59 edges
+## #
+## # An undirected simple graph with 3 components
+## #
+## # Edge Data: 59 x 3 (active)
+##    from    to weight
+##   &lt;int&gt; &lt;int&gt;  &lt;dbl&gt;
+## 1     1     2  1.00 
+## 2     1    20  1.00 
+## 3     1     8  0.999
+## 4     1     9  0.999
+## 5     1    11  0.998
+## 6     2    20  1.00 
+## # … with 53 more rows
+## #
+## # Node Data: 24 x 2
+##   label         cyl  
+##   &lt;chr&gt;         &lt;fct&gt;
+## 1 Mazda RX4     6    
+## 2 Mazda RX4 Wag 6    
+## 3 Datsun 710    4    
+## # … with 21 more rows
+```
+
+---
+# Visualizing the correlation network
+
+- Change the edges width according to the variable weight
+
+- Scale the edges width by setting the minimum width to 0.2 and the maximum to 1.
+
+- Change the color of cars (nodes) according to the grouping variable cyl.
+---
+# Visualizing the correlation network
+
+
+```r
+ggraph(cor.graph) + 
+  geom_edge_link(aes(width = weight), alpha = 0.2) + 
+  scale_edge_width(range = c(0.2, 1)) +
+  geom_node_point(aes(color = cyl), size = 2) +
+  geom_node_text(aes(label = label), size = 3, repel = TRUE) +
+  theme_graph()
+```
+
+&lt;img src="slides2_files/figure-html/unnamed-chunk-30-1.png" style="display: block; margin: auto;" /&gt;
+---
+# Network analysis
+
+How **central** (= important) is a node or edge in the network?
+
+The `tidygraph` package contains more than 10 centrality measures:
+
+
+
+```r
+centrality_authority()
+centrality_betweenness()
+centrality_closeness()
+centrality_hub()
+centrality_pagerank()
+centrality_eigen()
+centrality_edge_betweenness()
+```
+---
+
+# Network analysis
+
+
+```r
+phone.net %&gt;%
+  activate(nodes) %&gt;%
+  mutate(centrality = centrality_authority()) %&gt;% 
+  ggraph(layout = "graphopt") + 
+  geom_edge_link(width = 1, colour = "lightgray") +
+  geom_node_point(aes(size = centrality, colour = centrality)) +
+  geom_node_text(aes(label = label), repel = TRUE)+
+  scale_color_gradient(low = "yellow", high = "red")+
+  theme_graph()
+```
+
+&lt;img src="slides2_files/figure-html/unnamed-chunk-32-1.png" style="display: block; margin: auto;" /&gt;
+---
+
+# Clustering
+
+a common operation in network analysis aimed at grouping nodes based on the graph topology (= community detection based on its commonality in social network analysis).
+
+Many clustering algorithms from are available in the `tidygraph` package:
+
+`group_infomap()`:  Infomap community finding. It groups nodes by minimizing the expected description length of a random walker trajectory. 
+
+`group_edge_betweenness()`: Community structure detection based on edge betweenness. It groups densely connected nodes. 
+
+---
+# Clustering
+
+
+```r
+cor.graph %&gt;%
+  activate(nodes) %&gt;%
+   mutate(community = as.factor(group_infomap())) %&gt;% 
+  ggraph(layout = "graphopt") + 
+  geom_edge_link(width = 1, colour = "lightgray") +
+  geom_node_point(aes(colour = community), size = 4) +
+  geom_node_text(aes(label = label), repel = TRUE)+
+  theme_graph()
+```
+
+&lt;img src="slides2_files/figure-html/unnamed-chunk-33-1.png" style="display: block; margin: auto;" /&gt;
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"ratio": "16:9",
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
