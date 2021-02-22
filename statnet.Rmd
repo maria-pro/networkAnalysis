@@ -1,0 +1,172 @@
+---
+title: "statnet"
+author: "Maria Prokofieva"
+date: "20/02/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+#install.packages(c("igraph","graphlayouts","ggraph","ggplot2"))
+#ggplot2 is part of tidyverse package,
+
+library(igraph)
+library(statnet)
+library(ggraph)
+library(graphlayouts)
+library(tidygraph)
+```
+
+## `statnet` package
+
+
+
+[`statnet`](https://cran.r-project.org/web/packages/statnet/index.html) package includes several R other packages tailored for  the analysis of social networks and other relational data. 
+
+In this tutorial we are going to cover just basics of using this package. We will focus on the following *very basic packages* included in `statnet` package:
+
+- `network` package: a package to create, store, modify and plot the data in network objects. T
+
+- `sna` package: a package for traditional social network analysis.
+
+You can see the list of all packages included in `statnet` [here](https://cran.r-project.org/web/packages/statnet/statnet.pdf).
+
+
+There are ample resources for this package, such as
+
+- [statnet workshops](https://github.com/statnet/Workshops/wiki)
+
+### Network object
+
+`statnet` works with the `network object class`, defined in the network package. It works with various relational data types. Once the network object is created it can e analysed further using other parts (=packages) in `statnet`.
+
+**Network object**: stores an adjacency matrix or an edgelist as well as
+metadata.
+
+*Metadata*: vertex, edge, and network attributes
+
+We are going to have a look at one of the in-built datasets in the `network` package: `flo`
+
+`flo` is a dataset of Padgett (1994), consisting of weddings among leading Florentine families. The data is provided in the symmetric adjacency matrix form.
+
+```{r}
+data(flo)
+```
+
+```{r}
+family<-network(flo, directed=FALSE)
+
+class(family)
+```
+
+To create a network object we use `network()` function from the `network` (`statnet`) package
+
+The function has the following syntax:
+
+```{r eval=FALSE}
+network(x, vertex.attr = NULL, vertex.attrnames = NULL,
+  directed = TRUE, hyper = FALSE, loops = FALSE, multiple = FALSE,
+  bipartite = FALSE, ...)
+```
+
+where
+
+- `x` is a matrix with the network structure in adjacency, incidence or edgelist form.
+
+- `vertex.attr`  and `vertex.attrnames` are optional lists with vertex attributes and vertex attributes names
+
+- `directed` specifies if edges are directed
+
+To have a look at the network we can use `summary()` function
+
+```{r}
+summary(family)
+```
+
+We can visualize the network using `gplot()` function from the `sna` package:
+
+```{r}
+gplot(family, vertex.col = 2, displaylabels = TRUE)
+```
+
+`gplot` produces nice two-dimensional plots and comes with a variety of options to control vertex placement, display details, color, etc.
+
+### Working with edges
+
+We can create an empty network object using `network.initialize(n)` with n vertices:
+
+```{r}
+new_network<-network.initialize(5)
+class(new_network)
+summary(new_network)
+gplot(new_network, displaylabels = TRUE)
+```
+
+We can add edges to the network object and remove them
+
+```{r}
+new_network[1,2]<-3 #Add an edge from 1 to 2
+new_network[4,5]<-2#Add an edge from 4 to 5
+summary(new_network)
+gplot(new_network, displaylabels = TRUE) #Plot with names
+new_network #Examine the result
+```
+
+To remove the edge
+```{r}
+
+new_network[1,2] <- 0 #Remove the edge from 1 to 2
+new_network 
+gplot(new_network, displaylabels = TRUE) #Plot with names
+```
+
+### Description and Visualization
+
+Apart from the `summary()` function to get the overall summary of the network we can use the following functions:
+
+```{r eval=FALSE}
+network.size(family) #How large is the network?
+
+network.edgecount(family) #How many edges are present?
+
+plot(family,displaylabels=T,boxed.labels=F) #Plot with names
+```
+
+### Working with attributes (=vertex attributes)
+
+To see a vector of attribute values for vertices use  `get.vertex.attribute()`, or its shortcut, `%v%`:
+
+```{r}
+family %v% 'woo' <- letters[1:16] # Same as set.vertex.attribute
+family
+family %v% 'woo' #same as get.vertex.attribute
+```
+
+```{r}
+new_network %v% 'gender'<-c("F","F","M", "M", "F")
+new_network
+new_network %v% 'gender'
+```
+
+Information about tie (=edges) characteristics is stored and managed in the network objects, using the similarly named `set.edge.attributes()` and `get.edge.attributes()` functions.
+
+```{r}
+new_network
+list.edge.attributes(new_network)
+
+set.edge.attribute(new_network,"random_value", runif(network.size(new_network),0,1))
+list.edge.attributes(new_network)
+```
+
+We can use a similar shortcut `%e%` to access edge attributes
+
+```{r}
+summary(new_network %e% "random_value")
+
+summary(get.edge.attribute(new_network, "random_value"))
+
+
+```
+
+
