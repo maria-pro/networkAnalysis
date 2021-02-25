@@ -378,8 +378,6 @@ More than 140 benchmarks currently available to identify the central vertices, b
 an R package for computing, analyzing and comparing centrality measures submitted to CRAN repository.
 
 
-
-
 ```{r}
 #install.packages("CINNA")
 library(CINNA)

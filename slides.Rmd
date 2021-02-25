@@ -242,179 +242,6 @@ Image credit: [Network of connections between devices within the Internet. Court
 
 ---
 
-# Graph measures
-
-## **Size**
-
-= the number of members (e.g nodes, vertices or actors)
-
-Some books may refer to the number of nodes, while the number of edges is less common.
-
----
-
-# Graph measures
-
-##  **Density** 
-
-proportion of observed ties in a network to the maximum number of possible ties.
-
-a ratio that can range from 0 to 1.
-
-more interconnected networks have density closer to 1.
-
----
-# Graph measures
-
-##  **Density** 
-
-Density of directed network:
-
-(directed network is a network with a direction)
-
-Number of observed ties `L` to the maximum number of possible ties among `k` actors `k ∗ (k−1)`, so the formula for density is:
-
-### `density= L/(k*k-1))
-
-Loops are excluded! (= a tie between a node and itself)
-
-Density of undirected network
-
-where L is the number of observed ties in the network.
-
-##  **Diameter**
-
-The maximum of the shortest distances between all node-pairs in the graph.
----
-
-# Node Measure 
-
-##**Centrality**
-
-"Which node is the most important one in the network?" 
-
-- a function that assigns a numerical value to each vertex of a network according to its influence on the others. 
-
-- the importance of a node is determined by its position within a network. 
-
-- the meaning depends on the type of the network (e.g effective person in a social network or key train station in the urban networks).
-
----
-
-# Node Measure
-
-## **Centrality**
-
-Centrality can be classified in *local* and *global*
-
----
-# Node Measure - **Centrality**
-
-## Local Centrality Measures
-
-**Degree Centrality**: Number of edges that a node has 
-= the number of links incident upon a node.
-
----
-
-# Node Measure
-
-**Eigencentrality** is a measure of the importance of a node in a network. 
-
-- assigns relative scores to all nodes in the network that connections to high-scoring nodes contribute more to the score of the node in question than equal connections to low-scoring nodes.
-
-Node high on eigenvector centrality is essentially connected to many high degree nodes.
-
----
-
-# Node Measure
-
-##  **Closeness Centrality** 
-
-In a connected graph, the **normalized closeness** of a node is the average length of the shortest path between the node and all other nodes in the graph. 
-
-The more central a node is, the closer it is to all other nodes.
-
----
-
-# Node Measure
-
-##  **Betweenness Centrality** 
-
-The **normalized betweenness** of a node is the number of times a node acts as a bridge along the shortest path between two other nodes.
-
----
-
-# Node Measure
-
-![](img/centrality.png)
-
----
-
-# Network Measure
-
-## **Subgraphs**: 
-
-Subset of nodes in a network, along with all of the edges linking these nodes.
-
-## **Components** 
-
-A subgraph of the network that is disconnected from each other.
-
----
-
-# Network Measure
-
-## **Subgraphs** and **Components** 
-
-![](img/components.png)
----
-
-# Why R?
-
-- free, cross-platform, open-source programming language
-
-- large community of users and large community of academic users
-
-- dynamic growth with new and improved packages
-
-- Comprehensive R Archive Network (CRAN): repository with R packages that have been vetted and deposited on a server
-
----
-
-# Packages to use
-
-[igraph](https://igraph.org/r/)
-
-[statnet](https://cran.r-project.org/web/packages/statnet/)
-
-[`ggraph`](https://cran.r-project.org/web/packages/ggraph/)
-
-[`tidygraph`] (https://cran.r-project.org/web/packages/tidygraph/) 
-
-```{r eval=FALSE}
-#install.packages("igraph","statnet", "ggraph", "tidygraph")
-
-#load libraries
-library (igraph)
-library (statnet)
-library(ggraph)
-library(tidygraph)
-```
-
----
-
-# Big task:
-
-(apart from conquering the universe)
-
-complete a small project in R using social network analysis, using the provided dataset
-
-# Smaller tasks:
-
-- see each topic!
-
----
-
 # R Packages
 
 This tutorial we will use:
@@ -440,6 +267,15 @@ Let's talk about them briefly to dig into more details in the practical part.
 
 - [`igraph` package](https://igraph.org/r/)
 
+**Resources**:
+
+[Manual](https://igraph.org/r/doc/aaa-igraph-package.html)
+
+[Discussion group](https://igraph.discourse.group/)
+
+[StackOverFlow](https://stackoverflow.com/questions/tagged/igraph)
+
+
 ---
 
 #`statnet` package
@@ -464,13 +300,18 @@ Let's talk about them briefly to dig into more details in the practical part.
 
 [`ggraph`](https://cran.r-project.org/web/packages/ggraph/) is an extension of `ggplot2` for graph visualizations
 
-- use the same layer by layer philosophy
+- use the same layer by layer philosophy as`ggplot2` = grammar of graphics
+
+**Resources**:
+
+[Vignettes](https://cran.r-project.org/web/packages/ggraph/index.html)
+
 
 ---
 
 # `tidygraph`
 
-[`tidygraph`] (https://cran.r-project.org/web/packages/tidygraph/) is a tidy API for graph manipulation
+[`tidygraph`](https://cran.r-project.org/web/packages/tidygraph/) is a tidy API for graph manipulation
 
 - Provides a way for dplyr to interact with graphs
 

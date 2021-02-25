@@ -1,5 +1,5 @@
 ---
-title: "ggraph and visualization"
+title: "ggraph and tidygraph"
 author: "Maria Prokofieva"
 date: "17/02/2021"
 output: html_document
@@ -57,152 +57,12 @@ It iteratively minimize the total energy in a network:
 
 - The springs pull connected nodes closer to one another, but the repulsive forces push unconnected nodes away from each other. 
 
-Let's have a look at this example using `gplot()` function (with the same `family data set from `network` package, `flo`)
-
-```{r}
-
-#data(flo)
-#family<-network(flo, directed=FALSE)
-gplot(family, gmode="graph", mode="random", vertex.cex=1.5, main="Random layout")
-
-gplot(family, gmode="graph",mode="fruchtermanreingold", vertex.cex=1.5, main="Fruchterman-Reingold")
-```
-
-For network visualization `statnet` uses two closely related functions, `plot()` and `gplot()` (<-has more layout options)
-
-```{r}
-gplot(family, gmode="graph", edge.col="grey75", vertex.cex=1.5, mode='circle', main="circle")
-
-gplot(family, gmode="graph",edge.col="grey75", vertex.cex=1.5, mode='eigen', main="eigen")
-
-gplot(family, gmode="graph", edge.col="grey75", vertex.cex=1.5, mode='random', main="random")
-
-gplot(family, gmode="graph", edge.col="grey75", vertex.cex=1.5,mode='spring',main="spring")
-
-gplot(family, gmode="graph",edge.col="grey75", vertex.cex=1.5,mode='fruchtermanreingold', main='fruchtermanreingold')
-
-gplot(family,gmode="graph",edge.col="grey75", vertex.cex=1.5,mode='kamadakawai',
-main='kamadakawai')
-```
-
-Some options to be used there include:
-
-- `vertex.col`: color for vertices; may be given as a vector, if vertices are to be of different colors. By default, red is used (or red and blue, for two-mode data).
-
-- `vertex.cex`:	expansion factor for vertices; may be given as a vector, if vertices are to be of different sizes.
-
-- `label.cex`: character expansion factor for label text.
-
-- `label.col`: color for vertex labels; may be given as a vector, if labels are to be of different colors
-
-- `edge.col`: color for edges; may be given as a vector or adjacency matrix, if edges are to be of different colors.
-
--`mode`: the vertex placement algorithm which works with `gplot.layout` function.`
-
-Vertex layouts for network visualization is a difficult problem:
-
-- no single, “good” layout algorithm, and 
-
-- many different approaches may be valuable under different circumstances. 
-
-`gplot` allows for the use of arbitrary vertex layout algorithms 
-
-The layout currently supplied by default include:
-
-- `circle`: This function places vertices uniformly in a circle; it takes no arguments.
-
-- `eigen`: This function places vertices based on the eigenstructure of the adjacency matrix. 
-
-- `fruchtermanreingold`: a layout using a variant of Fruchterman and Reingold's force-directed placement algorithm
-
-- `kamadakawai`: a vertex layout using a version of the Kamada-Kawai force-directed placement algorithm
-
-The goal for any network graphic design should be to 
-
+**The goal for any network graphic design should be to **
 ------
 
 - **produce a figure that reveals the important or interesting information that is contained in the network data.**
 
 ----
-
-To do this consider every graphical element that can appear in the figure:
-
-#### Node Color
-
-```{r}
-gplot(family,vertex.col="slateblue2",gmode="graph", displaylabels=TRUE)
-
-
-```
-`vertex.col="slateblue2"` specifies the colour for nodes.
-
-A color are speified by their color names.
-
-Use the `colors()` command to see all of the 657 possible color names recognized by R, 
-
-```{r}
-colors() %>% head (20)
-```
-
-Colors can also be selected using Red-Green-Blue (RGB) triplets of intensities. You also can usea hexadecimal string of the form ‘#RRGGBB’, where each of the RR, GG, and BB parts of the string is a hexadecimal number that provides the red, green or blue intensity ranging from 00 to FF. You can see a great colour picker [here](https://www.w3schools.com/colors/colors_picker.asp)
-
-Normally, colors are fully opaque, which may be a problem for large networks with overlapping nodes (large color ‘blobs’).
-
-Use `rgb()` function to set transparency, from 0 (fully transparent) to 1 (fully opaque). See `?rgb` for more details.
-
-We are going to use our `routes_graph` to demonstrate this.  But first we need to convert it to `network` object from `igraph`. `integraph` package [here]()
-
-```{r}
-#install.packages("intergraph")
-library(intergraph)
-
-#let's do the conversion from igraph to network
-
-class(routes_graph)
-routes_graph_network<-asNetwork(routes_graph)
-class(routes_graph_network)
-summary(routes_graph_network)
-
-gplot(routes_graph_network,
-      gmode="graph",
-      vertex.cex=2, 
-      vertex.col=rgb(0,0,139,maxColorValue=255), 
-      edge.col="grey80",
-      edge.lwd=0.5,
-      main="Fully opaque")
-
-gplot(routes_graph_network,
-      gmode="graph",
-      vertex.cex=2,
-      vertex.col=rgb(0,0,139, alpha=80, maxColorValue=255),
-      edge.col="grey80",
-      edge.lwd=0.5,
-      main="Partly transparent")
-```
-Communicate some characteristic of the node or network by having different nodes have different colors.
-
-```{r}
-plot(routes_graph_network,usearrows=FALSE,vertex.cex=1.5,label=rolelab,
-displaylabels=T,vertex.col="role")
-```
-
-#### Node Shape
-
-
-#### Node Size
-
-#### Node Label
-
-#### Edge Width
-
-#### Edge Color
-
-#### Edge Type
-
-
-#### Legends
-
-
 
 ### `ggraph` 
 
@@ -331,6 +191,7 @@ The default arrowhead type is “open”, but “closed” usually has a better 
 geom_node_point(aes(fill = clu, size = size),shape = 21)+
 geom_node_text(aes(filter = size >= 26, label = name),family = "serif")
 ```
+
 The `node` layer should always go above the `edge` layer. Otherwise, edges will be visible on top of nodes. There are slightly less geoms available for nodes.
 
 c("geom_node_arc_bar", "geom_node_circle", "geom_node_label", 
@@ -365,6 +226,7 @@ ggraph(gr, 'stress') + geom_node_point()
 Possible shapes for the nodes can include:
 
 ![Shapes for nodes](img/points-symbols.png)
+
 *Shapes 1-20*: to change the color of shapes 1-20 use the `colour` option 
 
 *Shapes 21-25*: use `fill.` 
@@ -518,9 +380,161 @@ ggraph(g_got,layout = "stress")+
 
 ```
 
------------
+### `tidygraph` package
 
-## Tasks
+The `tidygraph` package provides a tidy framework to easily manipulate different types of relational data, including: graph, network and trees.
+
+In the tidygraph framework, network data are considered as two tidy data tables, one describing the node data and the other is for edge data. The package provides a simple solution to switch between the two tables and provides dplyr verbs for manipulating them.
+
+You will learn methods for detecting important or central entities in a network graph. We’ll also introduce how to detect community (or cluster) in a network.
+
+### Tidy data -> Tidy network data
+
+**Tidy data** approach relies on 3 rules which make a dataset tidy
+
+- Each variable must have its own column.
+
+- Each observation must have its own row.
+
+- Each value must have its own cell.
+
+Can we code network data in this way?
+
+Relational data -> single *tidy* data frame ?
+
+But
+
+nodes data -> tidy data = tidy data frame
+
+edges data -> tidy data = tidy data frame
+
+2 tidy data frames -> `tbl_graph` object
+
+## The tbl_graph object
+
+Working with `tidygraph` is based on using `tbl_graph` objects
+What is happening:
+
+`igraph`: keep the node and edge data in a list and creating igraph objects
+
+`tidygraph`: subclasses igraph with the `tbl_graph` class to work in a tidy manner.
+
+- ensures that all`igraph` features will work with `tbl_graph` objects. 
+
+To create `tbl_graph` objects use `tbl_graph()` function and providea node data.frame and an edge data.frame. It also works with : 
+
+- data.frame
+
+- list
+
+- matrix 
+
+- igraph object (`igraph`)
+
+- network object (`network`)
+
+- and LOTS of others (see [this](https://cran.r-project.org/web/packages/tidygraph/tidygraph.pdf))
+
+```{r}
+mtcars_matrix <- cor(t(mtcars[,c(1,3:6)]))
+
+mtcars_clust <- hclust(dist(mtcars[,c(1,3:6)]))
+
+
+mtcars_graph<-as_tbl_graph(mtcars_clust)
+
+mtcars_graph
+
+
+iris_clust <- hclust(dist(iris[1:4]))
+iris_tree <- as_tbl_graph(iris_clust)
+iris_tree
+```
+
+## How it works
+
+**Old way**: 
+
+`tidygraph` introduces new functions as well as allows to use traditional `tidyverse` functions:
+
+`mutate_nodes()` = `mutate (..., target = 'nodes)`
+
+`filter_edges()`= `filter (..., target = 'edges')`
+
+`arrange(..., target = 'nodes') `
+
+**New way**:
+
+Use a **pointer**  to let the data object itself do all manipulation.
+
+This pointer is changed using the `activate()`. You can use `nodes` and `edges` (from `ggraph`) or `vertices` and `links`.
+
+```{r}
+mtcars_graph %>% activate(edges)
+
+#Can extract the active data as tibble if needed
+as_tibble(mtcars_graph) %>% head()
+```
+Additionally, you can use `.N()`  to gain access to the node data *while manipulating the edge data*. 
+
+or 
+
+`.E()` to use the edge data when on the node data
+
+or 
+
+`.G()` to get access to the `tbl_graph` object itself.
+
+### `tidyverse` functions 
+
+`filter()`/`slice()` on node data remove the edges terminating at the removed nodes. 
+
+`arrange()` on nodes changes the indexes of the to and from column in the edge data.
+
+`dplyrs` is supported but requires rows to maintain their identity (due to relation structure). 
+
+e.g. summarise() and do() are not allowed - the change in node and edge data
+
+ps: you can apply them to a tibble representation of the data and then joining the result back in.
+
+`join` is supported, but `to` and `from` column should be referencing existing nodes.
+
+Additionally, we can use `bind_nodes()` and `bind_edges()`  to add nodes / edges to the graph. 
+
+`bind_graphs()` combines multiple graphs in the same graph structure, but cannot create edges between the merged graphs
+
+```{r}
+library(ggraph)
+graph1 <- create_notable('diamond') %>% 
+    mutate(name = letters[1:4])
+plot(graph1)
+graph2 <- create_star(5) %>% 
+    mutate(name = letters[4:8])
+plot(graph2)
+
+# Plot
+graph1 %>% bind_graphs(graph2) %>% 
+    ggraph(layout = 'kk') + 
+    geom_edge_link() + 
+    geom_node_point(size = 8, colour = 'steelblue') +
+    geom_node_text(aes(label = name), colour = 'white', vjust = 0.4) + 
+    ggtitle('Binding graphs using `bind_graphs`') + 
+    theme_graph()
+```
+vs
+
+`graph_join()`merges nodes using a `full_join()` and keeps the individual edges from both graphs
+
+```{r}
+graph1 %>% graph_join(graph2) %>% 
+    ggraph(layout = 'kk') + 
+    geom_edge_link() + 
+    geom_node_point(size = 8, colour = 'steelblue') +
+    geom_node_text(aes(label = name), colour = 'white', vjust = 0.4) + 
+    ggtitle('Joining graphs using `graph_join`') + 
+    theme_graph()
+```
+
 
 
 
