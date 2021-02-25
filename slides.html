@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Practical Applications of Network Science: Workshop</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Dr Maria Prokofieva" />
+    <meta name="date" content="2021-01-01" />
+    <script src="libs/header-attrs/header-attrs.js"></script>
+    <link href="libs/remark-css/shinobi.css" rel="stylesheet" />
+    <link href="libs/remark-css/ninjutsu.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Practical Applications of Network Science: Workshop
+## ⚔<br/>with xaringan
+### Dr Maria Prokofieva
+### VU Business School
+### 2021
+
+---
+
+
+
+background-image: url("img/bg.jpg")
+
+---
+
+background-image: url("img/flights.jpg")
+
+---
+
+background-image: url("img/k_map.jpg")
+
+---
+# Well - let's warm  up ...
+
+In the center of the river, there lay 2 islands that were connected to each other and the river banks by 7 bridges.
+
+Is there a route that would allow someone to cross all 7 bridges without crossing any of them more than once?
+
+![](img/k3.jpg)
+---
+# Seven Bridges of Königsberg
+
+Leonhard Euler:
+
+![](img/le.jpeg)
+
+
+*"... this type of solution bears little relationship to mathematics, and I do not understand why you expect a mathematician to produce it..."*
+
+... and then ...
+
+*"...This question is so banal, but seemed to me worthy of attention in that [neither] geometry, nor algebra, nor even the art of counting was sufficient to solve it."*
+
+## **... NO SOLUTION!!!!**
+
+and then... in 1875, the people of Königsberg decided to build a new bridge...
+
+---
+# Why Network Science?
+
+If you have any of these questions:
+
+- What are the elements in the system?
+
+- What are the role of those elements in the system?
+
+- What are the processes/interactions that build systems?
+
+- What are the dynamics of changes in the system?(e.g. spread of the disease, etc.)
+
+---
+# Why Network Science?
+
+understanding how people, entities, structures are connected
+
+how ... interact
+
+how ... that influence the change in ... across space and time
+
+### **Overall**: use network analysis if you need to understand the **system**: 
+  
+  = how **interactions** or **connections** between **components** make up a **system**
+---
+# Applications 
+
+social networks - any!
+
+- humans and animals
+
+- ecological communities and populations
+
+- personality traits
+
+- biological systems: genes regulation systems, metabolic systems
+
+- ANY SYSTEM 
+
+![](img/m_map.png)
+
+---
+# LinkedIn
+
+![](img/sn.png)
+
+### What is this?
+---
+# LinkedIn
+
+![](img/sn.png)
+
+
+### a collection of vertices, V, and edges, E.
+---
+# Key concepts:
+
+![](img/graph.png)
+
+A **graph** is a number of points that are connected by lines. 
+
+Each point is usually called a **vertex** = node (more than one are called **vertices** = nodes)
+
+Lines are called **edges**.
+---
+# Key concepts:
+
+![](img/graph.png)
+
+**Incident**: Any edge is incident to 2 vertices.
+
+x is incident to A and E. 
+---
+# Key concepts:
+
+![](img/graph.png)
+
+**Adjacent**: Adjacent vertices are connected by an edge.
+
+G is adjacent to D, F, and H because there is some edge going from G to all these other vertices. 
+---
+# Key concepts:
+
+![](img/graph.png)
+
+**Isolated**: B is isolated because it’s not connected to any other vertices
+
+---
+# Key concepts:
+
+![](img/graph.png)
+
+**Degree**: The degree is just the number of connections a vertex has
+
+A has a degree of 2, B has a degree of 0, and F has a degree of 4. 
+
+---
+# Key concepts:
+
+![](img/d_ind_graph.png)
+
+![](img/one_way.jpeg)
+---
+# Key concepts:
+
+![](img/w_unw.png)
+
+**Weight**: a value representing the length of the edge.
+---
+class: center, middle
+
+# Ways to represent graphs
+
+### non-linear data structure (the visual representation) -&gt; linear data structure ???
+
+---
+# Edge lists
+
+
+unordered list of edges
+
+
+![](img/edgeList.png)
+
+Practical, but not efficient for really dense graphs 
+???
+
+Image credit: [Vaidehi Joshi](https://medium.com/basecs/from-theory-to-practice-representing-graphs-cfd782c5be38)
+
+---
+# Adjacency lists
+
+![](img/adjus.jpeg)
+**Adjacency lists**: lists out the connections for each vertex
+
+An **adjacency matrix** is a matrix representation of exactly which nodes in a graph contain edges between them
+
+???
+Image credit: [Vaidehi Joshi](https://medium.com/basecs/from-theory-to-practice-representing-graphs-cfd782c5be38)
+---
+
+# Example
+
+![](img/example.png)
+---
+
+# Questions to ask about a network:
+
+- How large the network is?
+
+- How densely connected is it? 
+
+- Is the network made up of one or more distinct groups?
+
+- How compact is the network?
+
+- How clustered are the network members?
+
+---
+# Measures
+
+## Graph measures
+
+## Node measures
+
+## Edge measures
+
+## Network measure
+
+---
+
+# Network of connections between devices within the Internet
+
+![](img/graphex1.jpg)
+???
+Image credit: [Network of connections between devices within the Internet. Courtesy of Steve Jurvetson](http://www.flickr.com/photos/jurvetson/916142/)
+
+---
+
+# R Packages
+
+This tutorial we will use:
+
+- `igraph`
+
+- `statnet`
+
+Also
+- `tidygraph`
+
+- `ggraph` 
+
+Let's talk about them briefly to dig into more details in the practical part.
+
+---
+
+#`igraph` package
+
+['igraph'](https://igraph.org/) is a collection for creating and manipulating graphs and analyzing networks. 
+
+- written in C and also exists as Python and R packages.
+
+- [`igraph` package](https://igraph.org/r/)
+
+**Resources**:
+
+[Manual](https://igraph.org/r/doc/aaa-igraph-package.html)
+
+[Discussion group](https://igraph.discourse.group/)
+
+[StackOverFlow](https://stackoverflow.com/questions/tagged/igraph)
+
+
+---
+
+#`statnet` package
+
+['statnet'](http://statnet.org/) is a collection of R packages for 
+
+- management, 
+
+- exploration, 
+
+- statistical analysis, 
+
+- simulation and 
+
+- vizualization of network data. 
+
+- based on [Exponential-family Random Graph Models (ERGMs)](https://en.wikipedia.org/wiki/Exponential_random_graph_models).  
+
+---
+
+#`ggraph`
+
+[`ggraph`](https://cran.r-project.org/web/packages/ggraph/) is an extension of `ggplot2` for graph visualizations
+
+- use the same layer by layer philosophy
+
+---
+
+# `tidygraph`
+
+[`tidygraph`](https://cran.r-project.org/web/packages/tidygraph/) is a tidy API for graph manipulation
+
+- Provides a way for dplyr to interact with graphs
+
+---
+
+# Datasets
+
+[`networkdata` package](http://networkrepository.com/): a large collection of dataset for network science from wide variety of areas
+
+
+```r
+install.packages("remotes")
+remotes::install_github("schochastics/networkdata")
+library(networkdata)
+```
+
+
+```r
+#to see the list of datasets
+data(package = "networkdata")
+```
+
+---
+
+# Network Data objects
+
+Types of information:
+
+**Nodes**: list of nodes in network + node labels (Required)
+
+in `statnet` =vertices
+
+**Ties**: list of ties in the network (Required)
+
+**Node attributes**: attributes of the nodes (Optional)
+
+**Tie attributes**: attributes of the ties (Optional)
+
+**Metadata**: other information about the entire network
+`statnet` = global information about the network (e.g. directed or not directed, are loops allowed, etc.)
+
+---
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"ratio": "16:9",
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
