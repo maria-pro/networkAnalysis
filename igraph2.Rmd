@@ -3,6 +3,8 @@ title: "igraph2 - French trains case study"
 author: "Maria Prokofieva"
 date: "18/02/2021"
 output: html_document
+
+
 ---
 
 ```{r setup, include=FALSE}
